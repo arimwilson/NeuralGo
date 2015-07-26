@@ -1,0 +1,30 @@
+package neural;
+
+message SynapseConfiguration {
+  optional double weight = 1;
+}
+
+message NeuronConfiguration {
+  // If synapse weights are not provided, they are initialized to 0.
+  repeated SynapseConfiguration synapse = 1;
+}
+
+message LayerConfiguration {
+  enum ActivationFunction {
+    LINEAR = 0;
+    RELU = 1;
+    LOGISTIC = 2;
+    TANH = 3;
+  }
+  // Activation function for this layer.
+  optional ActivationFunction activation_function = 1;
+  // Description of the number and weights of neurons in this layer.
+  repeated NeuronConfiguration neuron = 2;
+}
+
+message NetworkConfiguration {
+  // Number of inputs to the network.
+  optional int32 inputs = 1;
+  // Description of each hidden layer and the output layer of the network.
+  repeated LayerConfiguration layer = 2;
+}

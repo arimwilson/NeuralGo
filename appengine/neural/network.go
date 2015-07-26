@@ -1,11 +1,35 @@
 package neural
 
-import ("encoding/json"; "math/rand")
+import ("encoding/json"; "github.com/golang/protobuf/proto"; "math/rand")
 
 func NewNetwork(
-    inputs int, layers []int, functions []string) *Network{
+    network_configuration NetworkConfiguration) *Network {
   network := new(Network)
-  network.init(inputs, layers, functions)
+  network.Inputs = []*Input{}
+  for i := 0; i < network_configuration.Inputs; i++ {
+    network.Inputs = append(network.Inputs, NewInput())
+  }
+  network.Layers = []*Layer{}
+  for _, layer_configuration := range network_configuration.Layer {
+    layer := NewLayer(count, layer_configuration.ActivationFunction)
+    network.Layers = append(network.Layers, layer)
+  }
+  // Connect all the layers.
+  for _, input := range network.Inputs {
+    input.ConnectTo(network.Layers[0])
+  }
+  for i := 0; i < len(network.Layers) - 1; i++ {
+    network.Layers[i].ConnectTo(network.Layers[i+1])
+  }
+  // Initialize weights.
+  for i, layer_configuration := range network_configuration.Layers {
+    for j, neuron_configuration := range layer_configuration.Neuron {
+      for k, synapse_configuration := range neuron_configuration.Synapse {
+        network.Layers[i].Neurons[j].InputSynapses[k].Weight =
+            synapse_configuration.Weight
+      }
+    }
+  }
   return network
 }
 
@@ -54,12 +78,6 @@ func (self *Network) Train(inputs []float64, values []float64, speed float64) {
   }
 }
 
-type SerializedNetwork struct {
-  Inputs int
-  ActivationFunctions []string
-  Weights [][][]float64
-}
-
 func (self *Network) Serialize() []byte {
   serializedNetwork := &SerializedNetwork{
       Inputs: len(self.Inputs),
@@ -101,21 +119,3 @@ func (self *Network) Deserialize(byteNetwork []byte) {
   }
 }
 
-func (self *Network) init(inputs int, layers []int, functions []string) {
-  self.Inputs = []*Input{}
-  for i := 0; i < inputs; i++ {
-    self.Inputs = append(self.Inputs, NewInput())
-  }
-  self.Layers = []*Layer{}
-  for i, count := range layers {
-    layer := NewLayer(count, functions[i])
-    self.Layers = append(self.Layers, layer)
-  }
-  // Connect all the layers.
-  for _, input := range self.Inputs {
-    input.ConnectTo(self.Layers[0])
-  }
-  for i := 0; i < len(self.Layers) - 1; i++ {
-    self.Layers[i].ConnectTo(self.Layers[i+1])
-  }
-}

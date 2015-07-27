@@ -92,19 +92,19 @@ function get(form) {
 <body>
 <form action="javascript:create(this)">
 <b>Create the network</b><br>
-Serialized network file (<a href="https://raw.githubusercontent.com/evilrobot69/code/master/NeuralGo/examples/simple/network.txt">example</a>): <input type="file" id="serializedNetwork" onchange="getSerializedNetwork(event)"><br>
+Serialized network file (<a href="https://raw.githubusercontent.com/evilrobot69/NeuralGo/master/examples/simple/network.txt">example</a>): <input type="file" id="serializedNetwork" onchange="getSerializedNetwork(event)"><br>
 <input type="submit" value="Create">
 </form><br><br>
 <form action="javascript:train(this)">
 <b>Train the network</b><br>
-Training file (<a href="https://raw.githubusercontent.com/evilrobot69/code/master/NeuralGo/examples/circle/training.txt">example</a>): <input type="file" id="trainingExamples" onchange="getTrainingExamples(event)"><br>
+Training file (<a href="https://raw.githubusercontent.com/evilrobot69/NeuralGo/master/examples/circle/training.txt">example</a>): <input type="file" id="trainingExamples" onchange="getTrainingExamples(event)"><br>
 Training iterations: <input type="number" id="trainingIterations" value=1000 min=0><br>
 Training speed: <input type="number" id="trainingSpeed" value=0.001 step="any" min=0><br>
 <input type="submit" value="Train">
 </form><br><br>
 <b>Test the network</b><br>
 <form action="javascript:test(this)">
-Testing file (<a href="https://raw.githubusercontent.com/evilrobot69/code/master/NeuralGo/examples/circle/testing.txt">example</a>): <input type="file" id="testingExamples" onchange="getTestingExamples(event)"><br>
+Testing file (<a href="https://raw.githubusercontent.com/evilrobot69/NeuralGo/master/examples/circle/testing.txt">example</a>): <input type="file" id="testingExamples" onchange="getTestingExamples(event)"><br>
 <input type="submit" value="Test">
 </form><br><br>
 <b>Evaluate the neural network at a point</b><br>

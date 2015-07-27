@@ -6,8 +6,8 @@
 
 package main
 
-import ("encoding/json"; "flag"; "fmt"; "github.com/golang/protobuf/proto";
-        "io/ioutil"; "log"; "math/rand"; "time"; "./appengine/neural")
+import ("encoding/json"; "flag"; "fmt"; "io/ioutil"; "log"; "math/rand"; "time";
+        "./appengine/neural")
 
 var serializedNetworkFlag = flag.String(
   "serialized_network", "", "File with JSON-formatted NetworkConfiguration.")

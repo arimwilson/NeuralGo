@@ -5,20 +5,21 @@ message SynapseConfiguration {
 }
 
 message NeuronConfiguration {
-  // If synapse weights are not provided, they are initialized to 0.
   repeated SynapseConfiguration synapse = 1;
 }
 
+enum ActivationFunction {
+  LINEAR = 0;
+  RELU = 1;
+  LOGISTIC = 2;
+  TANH = 3;
+}
+
 message LayerConfiguration {
-  enum ActivationFunction {
-    LINEAR = 0;
-    RELU = 1;
-    LOGISTIC = 2;
-    TANH = 3;
-  }
   // Activation function for this layer.
   optional ActivationFunction activation_function = 1;
-  // Description of the number and weights of neurons in this layer.
+  // Description of the number and weights of neurons in this layer. Note that
+  // if weights are not provided, they will be randomly initialized.
   repeated NeuronConfiguration neuron = 2;
 }
 

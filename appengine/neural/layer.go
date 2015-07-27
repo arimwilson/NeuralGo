@@ -1,6 +1,6 @@
 package neural
 
-func NewLayer(neurons int, function string) *Layer {
+func NewLayer(neurons int, function ActivationFunction) *Layer {
   layer := new(Layer)
   for i := 0; i < neurons; i++ {
     layer.Neurons = append(layer.Neurons, NewNeuron(function))

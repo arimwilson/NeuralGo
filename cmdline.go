@@ -2,27 +2,18 @@
 // regression problem.
 //
 // Sample usage:
-// go run cmdline.go -training_file training.txt -testing_file testing.txt
+// go run cmdline.go -serialized_network_file network.txt -training_file training.txt -testing_file testing.txt
 
 package main
 
-import ("encoding/json"; "flag"; "fmt"; "io/ioutil"; "log"; "math/rand";
-        "time"; "./appengine/neural")
+import ("encoding/json"; "flag"; "fmt"; "github.com/golang/protobuf/proto";
+        "io/ioutil"; "log"; "math/rand"; "time"; "./appengine/neural")
 
+var serializedNetworkFlag = flag.String(
+  "serialized_network", "", "File with JSON-formatted NetworkConfiguration.")
 var trainingExamplesFlag = flag.String(
   "training_file", "",
   "File with JSON-formatted array of training examples with values.")
-var serializedNetworkFileFlag = flag.String(
-  "serialized_network_file", "",
-  "File with serialized version of neural network. If present, overrides " +
-  "--neurons_number and --neurons_function.")
-var neuronsNumberFlag = flag.String(
-  "neurons_number", "[10, 1]",
-  "JSON-formatted array of number of neurons for each layer in the network.")
-var neuronsFunctionFlag = flag.String(
-  "neurons_function", "[\"ReLU\", \"Linear\"]",
-  "JSON-formatted array of activation function for neurons each layer in the " +
-  "network.")
 var trainingIterationsFlag = flag.Int(
   "training_iterations", 1000, "Number of training iterations.")
 var trainingSpeedFlag = flag.Float64(
@@ -51,27 +42,14 @@ func main() {
   // Set up neural network using flags.
   var neuralNetwork *neural.Network
   trainingExamples := ReadDatapointsOrDie(*trainingExamplesFlag)
-  if *serializedNetworkFileFlag != "" {
-    byteNetwork, err := ioutil.ReadFile(*serializedNetworkFileFlag)
-    if err != nil {
-      log.Fatal(err)
-    }
-    neuralNetwork = new(neural.Network)
-    neuralNetwork.Deserialize(byteNetwork)
-  } else {
-    neuronsNumber := make([]int, 0)
-    err := json.Unmarshal([]byte(*neuronsNumberFlag), &neuronsNumber)
-    if err != nil {
-      log.Fatal(err)
-    }
-    neuronsFunction := make([]string, 0)
-    err = json.Unmarshal([]byte(*neuronsFunctionFlag), &neuronsFunction)
-    if err != nil {
-      log.Fatal(err)
-    }
-    // Use the first training example to decide how many features we have.
-    neuralNetwork = neural.NewNetwork(
-        len(trainingExamples[0].Features), neuronsNumber, neuronsFunction)
+  byteNetwork, err := ioutil.ReadFile(*serializedNetworkFlag)
+  if err != nil {
+    log.Fatal(err)
+  }
+  neuralNetwork = new(neural.Network)
+  neuralNetwork.Deserialize(byteNetwork)
+  // If synapse weights aren't specified, randomize them.
+  if neuralNetwork.Layers[0].Neurons[0].InputSynapses[0].Weight == 0 {
     neuralNetwork.RandomizeSynapses()
   }
   testingExamples := ReadDatapointsOrDie(*testingExamplesFlag)

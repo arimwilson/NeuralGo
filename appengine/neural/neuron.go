@@ -1,6 +1,6 @@
 package neural
 
-func NewNeuron(function string) *Neuron {
+func NewNeuron(function ActivationFunction) *Neuron {
   neuron := new(Neuron)
   // Add bias term as first input.
   synapse := NewSynapse(0)
@@ -12,7 +12,7 @@ func NewNeuron(function string) *Neuron {
 type Neuron struct {
   InputSynapses []*Synapse
   OutputSynapses []*Synapse
-  ActivationFunction string
+  ActivationFunction ActivationFunction
   Output float64
 }
 
@@ -31,7 +31,7 @@ func (self *Neuron) Forward() {
     }
     output += synapse.Output
   }
-  self.Output = ActivationFunction(self.ActivationFunction, output)
+  self.Output = Activate(self.ActivationFunction, output)
   for _, synapse := range self.OutputSynapses {
     synapse.Signal(self.Output)
   }
@@ -43,14 +43,14 @@ func (self* Neuron) Backward() {
     gradient += synapse.Weight * synapse.Gradient
   }
   gradient =
-      DActivationFunction(self.ActivationFunction, self.Output) * gradient
+      DActivate(self.ActivationFunction, self.Output) * gradient
   for _, synapse := range self.InputSynapses {
     synapse.Feedback(gradient)
   }
 }
 
 func (self* Neuron) BackwardOutput(value float64) {
-  gradient := DActivationFunction(self.ActivationFunction, self.Output) *
+  gradient := DActivate(self.ActivationFunction, self.Output) *
               (value - self.Output)
   for _, synapse := range self.InputSynapses {
     synapse.Feedback(gradient)

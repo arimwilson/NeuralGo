@@ -67,30 +67,17 @@ func create(w http.ResponseWriter, r *http.Request) {
   c := appengine.NewContext(r)
   // Get params from request.
   err := r.ParseForm()
+  if err != nil {
+    c.Errorf("Could not parse form with error: %s", err.Error())
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
   rand.Seed(time.Now().UTC().UnixNano())
 
-  var neuralNetwork *neural.Network
-  c.Infof(fmt.Sprintf("%v", len(r.FormValue("serializedNetwork"))))
-  if len(r.FormValue("serializedNetwork")) > 0 {
-    neuralNetwork = new(neural.Network)
-    neuralNetwork.Deserialize([]byte(r.FormValue("serializedNetwork")))
-  } else {
-    var inputs int
-    if inputs, err = strconv.Atoi(r.FormValue("inputs")); err != nil {
-      c.Errorf("Could not parse inputs with error: %s", err.Error())
-      http.Error(w, err.Error(), http.StatusInternalServerError)
-      return
-    }
-    neuronsNumber := make([]int, 0)
-    if !unmarshal([]byte(r.FormValue("neuronsNumber")), &neuronsNumber, c, w) {
-      return
-    }
-    neuronsFunction := make([]string, 0)
-    if !unmarshal([]byte(r.FormValue("neuronsFunction")), &neuronsFunction, c,
-                  w) {
-      return
-    }
-    neuralNetwork = neural.NewNetwork(inputs, neuronsNumber, neuronsFunction)
+  neuralNetwork := new(neural.Network)
+  neuralNetwork.Deserialize([]byte(r.FormValue("serializedNetwork")))
+  // If synapse weights aren't specified, randomize them.
+  if neuralNetwork.Layers[0].Neurons[0].InputSynapses[0].Weight == 0 {
     neuralNetwork.RandomizeSynapses()
   }
   var modelId string

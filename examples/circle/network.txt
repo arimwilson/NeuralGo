@@ -1,0 +1,1 @@
+{"inputs":2,"layer":[{"activation_function":1,"neuron":[{},{},{},{},{},{},{},{},{},{}]},{"activation_function":0,"neuron":[{}]}]}

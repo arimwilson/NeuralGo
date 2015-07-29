@@ -17,9 +17,10 @@ func (self *Synapse) Signal(value float64) {
 }
 
 func (self *Synapse) Feedback(gradient float64) {
-  self.Gradient = gradient
+  self.Gradient += gradient
 }
 
 func (self *Synapse) Update(speed float64) {
   self.Weight += speed * self.Gradient * self.Input
+  self.Gradient = 0
 }

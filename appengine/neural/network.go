@@ -24,7 +24,7 @@ func (self *Network) RandomizeSynapses() {
   }
 }
 
-func (self *Network) Evaluate(inputs []float64) []float64 {
+func (self *Network) Forward(inputs []float64) []float64 {
   for i, input := range inputs {
     self.Inputs[i].Input = input
     self.Inputs[i].Forward()
@@ -40,8 +40,7 @@ func (self *Network) Evaluate(inputs []float64) []float64 {
   return outputs
 }
 
-func (self *Network) Train(inputs []float64, values []float64, speed float64) {
-  self.Evaluate(inputs)
+func (self *Network) Backward(values []float64) {
   outputLayer := self.Layers[len(self.Layers) - 1]
   for i, neuron := range outputLayer.Neurons {
     neuron.BackwardOutput(values[i])
@@ -49,8 +48,23 @@ func (self *Network) Train(inputs []float64, values []float64, speed float64) {
   for i := len(self.Layers) - 2; i >= 0; i-- {
     self.Layers[i].Backward()
   }
+}
+
+func (self *Network) Update(learningConfiguration LearningConfiguration) {
   for _, layer := range self.Layers {
-    layer.Update(speed)
+    layer.Update(*learningConfiguration.Rate)
+  }
+}
+
+func (self *Network) Train(inputs []float64, values []float64,
+                           learning_configuration LearningConfiguration) {
+  self.Forward(inputs)
+  outputLayer := self.Layers[len(self.Layers) - 1]
+  for i, neuron := range outputLayer.Neurons {
+    neuron.BackwardOutput(values[i])
+  }
+  for i := len(self.Layers) - 2; i >= 0; i-- {
+    self.Layers[i].Backward()
   }
 }
 

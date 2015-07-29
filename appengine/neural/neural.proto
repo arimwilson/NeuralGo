@@ -29,3 +29,12 @@ message NetworkConfiguration {
   // Description of each hidden layer and the output layer of the network.
   repeated LayerConfiguration layer = 2;
 }
+
+message LearningConfiguration {
+  // Number of times to iterate over training data.
+  optional int32 epochs = 1;
+  // Fixed learning rate.
+  optional double rate = 2;
+  // Size of training batches. Default to online learning.
+  optional int32 batch_size = 3 [default = 1];
+}

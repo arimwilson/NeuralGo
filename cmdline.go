@@ -6,8 +6,8 @@
 
 package main
 
-import ("encoding/json"; "flag"; "fmt"; "io/ioutil"; "log"; "math/rand"; "time";
-        "./appengine/neural")
+import ("encoding/json"; "flag"; "fmt"; "github.com/golang/protobuf/proto";
+        "io/ioutil"; "log"; "math/rand"; "time"; "./appengine/neural")
 
 var serializedNetworkFlag = flag.String(
   "serialized_network", "", "File with JSON-formatted NetworkConfiguration.")
@@ -18,6 +18,8 @@ var trainingIterationsFlag = flag.Int(
   "training_iterations", 1000, "Number of training iterations.")
 var trainingSpeedFlag = flag.Float64(
   "training_speed", 0.001, "Speed of training.")
+var batchSizeFlag = flag.Int(
+  "batch_size", 1, "Size of batches used for training.")
 var testingExamplesFlag = flag.String(
   "testing_file", "",
   "File with JSON-formatted array of testing examples with values.")
@@ -39,7 +41,7 @@ func main() {
   flag.Parse()
   rand.Seed(time.Now().UTC().UnixNano())
 
-  // Set up neural network using flags.
+  // Set up neural network.
   var neuralNetwork *neural.Network
   trainingExamples := ReadDatapointsOrDie(*trainingExamplesFlag)
   byteNetwork, err := ioutil.ReadFile(*serializedNetworkFlag)
@@ -52,13 +54,17 @@ func main() {
   if neuralNetwork.Layers[0].Neurons[0].InputSynapses[0].Weight == 0 {
     neuralNetwork.RandomizeSynapses()
   }
-  testingExamples := ReadDatapointsOrDie(*testingExamplesFlag)
 
   // Train the model.
-  neural.Train(neuralNetwork, trainingExamples, *trainingIterationsFlag,
-               *trainingSpeedFlag)
+  learningConfiguration := neural.LearningConfiguration{
+      Epochs: proto.Int32(int32(*trainingIterationsFlag)),
+      Rate: proto.Float64(*trainingSpeedFlag),
+      BatchSize: proto.Int32(int32(*batchSizeFlag)),
+  }
+  neural.Train(neuralNetwork, trainingExamples, learningConfiguration)
 
   // Test & print model:
+  testingExamples := ReadDatapointsOrDie(*testingExamplesFlag)
   fmt.Printf("Training error: %v\nTesting error: %v\nNetwork: %v\n",
              neural.Evaluate(*neuralNetwork, trainingExamples),
              neural.Evaluate(*neuralNetwork, testingExamples),

@@ -1,7 +1,8 @@
 package appengine
 
-import ("appengine"; "appengine/memcache"; "encoding/json"; "fmt"; "math/rand";
-        "net/http"; "strconv"; "time"; "neural")
+import ("appengine"; "appengine/memcache"; "encoding/json"; "fmt";
+        "github.com/golang/protobuf/proto"; "math/rand"; "net/http";
+        "strconv"; "time"; "neural")
 
 func init() {
   http.HandleFunc("/create", create)
@@ -123,10 +124,21 @@ func train(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
+  var batchSize int
+  batchSize, err = strconv.Atoi(r.FormValue("batchSize"))
+  if err != nil {
+    c.Errorf("Could not parse batchSize with error: %s", err.Error())
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
 
   // Train the model.
-  neural.Train(&neuralNetwork, trainingExamples, trainingIterations,
-               trainingSpeed)
+  learningConfiguration := neural.LearningConfiguration{
+      Epochs: proto.Int32(int32(trainingIterations)),
+      Rate: proto.Float64(trainingSpeed),
+      BatchSize: proto.Int32(int32(batchSize)),
+  }
+  neural.Train(&neuralNetwork, trainingExamples, learningConfiguration)
   if _, success := putModelIntoCache(
          r.FormValue("modelId"), neuralNetwork, c, w); !success {
     return
@@ -185,7 +197,7 @@ func evaluate(w http.ResponseWriter, r *http.Request) {
 
   // Test the model.
   w.Write([]byte(fmt.Sprintf(
-    "Evaluation: %v\n", neuralNetwork.Evaluate(features))))
+    "Evaluation: %v\n", neuralNetwork.Forward(features))))
 }
 
 func get(w http.ResponseWriter, r *http.Request) {

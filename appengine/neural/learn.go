@@ -1,6 +1,6 @@
 package neural
 
-import ("math/rand")
+import ("github.com/golang/protobuf/proto"; "math/rand")
 
 type Datapoint struct {
   Features []float64
@@ -12,6 +12,10 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
   // Train on some number of iterations of permuted versions of the input.
   for i := 0; i < int(*learningConfiguration.Epochs); i++ {
     perm := rand.Perm(len(datapoints))
+    // Batch size 0 means do full batch learning.
+    if *learningConfiguration.BatchSize == 0 {
+      learningConfiguration.BatchSize = proto.Int32(int32(len(datapoints)))
+    }
     for _, index := range perm {
       neuralNetwork.Forward(datapoints[index].Features)
       neuralNetwork.Backward(datapoints[index].Values)

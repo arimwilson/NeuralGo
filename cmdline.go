@@ -35,6 +35,9 @@ var mnistFlag = flag.String(
   "mnist", "",
   "Location of MNIST training / testing data. If non-empty, overrides " +
   "-training_file and -testing_file.")
+var serializedNetworkOutFlag = flag.String(
+  "serialized_network_out", "",
+  "File to write JSON-formatted NetworkConfiguration.")
 
 func ReadDatapointsOrDie(filename string) []neural.Datapoint {
   bytes, err := ioutil.ReadFile(filename)
@@ -106,9 +109,12 @@ func main() {
   }
   neural.Train(neuralNetwork, trainingExamples, learningConfiguration)
 
-  // Test & print model:
-  fmt.Printf("Training error: %v\nTesting error: %v\nNetwork: %v\n",
+  // Test & output model:
+  fmt.Printf("Training error: %v\nTesting error: %v\n",
              neural.Evaluate(*neuralNetwork, trainingExamples),
              neural.Evaluate(*neuralNetwork, testingExamples),
              string(neuralNetwork.Serialize()))
+  if len(*serializedNetworkOutFlag) > 0 {
+    ioutil.WriteFile(*serializedNetworkOutFlag, neuralNetwork.Serialize(), 0777)
+  }
 }

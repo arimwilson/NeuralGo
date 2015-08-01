@@ -112,8 +112,7 @@ func main() {
   // Test & output model:
   fmt.Printf("Training error: %v\nTesting error: %v\n",
              neural.Evaluate(*neuralNetwork, trainingExamples),
-             neural.Evaluate(*neuralNetwork, testingExamples),
-             string(neuralNetwork.Serialize()))
+             neural.Evaluate(*neuralNetwork, testingExamples))
   if len(*serializedNetworkOutFlag) > 0 {
     ioutil.WriteFile(*serializedNetworkOutFlag, neuralNetwork.Serialize(), 0777)
   }

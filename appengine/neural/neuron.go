@@ -57,8 +57,8 @@ func (self* Neuron) BackwardOutput(value float64) {
   }
 }
 
-func (self* Neuron) Update(speed float64) {
+func (self* Neuron) Update(learningConfiguration LearningConfiguration) {
   for _, synapse := range self.InputSynapses {
-    synapse.Update(speed)
+    synapse.Update(learningConfiguration)
   }
 }

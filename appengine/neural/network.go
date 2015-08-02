@@ -52,7 +52,7 @@ func (self *Network) Backward(values []float64) {
 
 func (self *Network) Update(learningConfiguration LearningConfiguration) {
   for _, layer := range self.Layers {
-    layer.Update(*learningConfiguration.Rate)
+    layer.Update(learningConfiguration)
   }
 }
 

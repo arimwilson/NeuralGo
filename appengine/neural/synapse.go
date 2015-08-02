@@ -20,7 +20,8 @@ func (self *Synapse) Feedback(gradient float64) {
   self.Gradient += gradient
 }
 
-func (self *Synapse) Update(speed float64) {
-  self.Weight += speed * self.Gradient * self.Input
+func (self *Synapse) Update(learningConfiguration LearningConfiguration) {
+  self.Weight += *learningConfiguration.Rate *
+      (self.Gradient * self.Input - *learningConfiguration.Decay * self.Weight)
   self.Gradient = 0
 }

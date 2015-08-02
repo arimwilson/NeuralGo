@@ -124,6 +124,13 @@ func train(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
+  var weightDecay float64
+  weightDecay, err = strconv.ParseFloat(r.FormValue("weightDecay"), 64)
+  if err != nil {
+    c.Errorf("Could not parse weightDecay with error: %s", err.Error())
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
   var batchSize int
   batchSize, err = strconv.Atoi(r.FormValue("batchSize"))
   if err != nil {
@@ -136,6 +143,7 @@ func train(w http.ResponseWriter, r *http.Request) {
   learningConfiguration := neural.LearningConfiguration{
       Epochs: proto.Int32(int32(trainingIterations)),
       Rate: proto.Float64(trainingSpeed),
+      Decay: proto.Float64(weightDecay),
       BatchSize: proto.Int32(int32(batchSize)),
   }
   neural.Train(&neuralNetwork, trainingExamples, learningConfiguration)

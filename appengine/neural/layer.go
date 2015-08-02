@@ -33,8 +33,8 @@ func (self* Layer) Backward() {
   }
 }
 
-func (self* Layer) Update(speed float64) {
+func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   for _, neuron := range self.Neurons {
-    neuron.Update(speed)
+    neuron.Update(learningConfiguration)
   }
 }

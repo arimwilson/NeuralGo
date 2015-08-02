@@ -35,6 +35,8 @@ message LearningConfiguration {
   optional int32 epochs = 1;
   // Fixed learning rate.
   optional double rate = 2;
-  // Size of training batches. Default to online learning.
-  optional int32 batch_size = 3 [default = 1];
+  // Weight decay rate.
+  optional double decay = 4;
+  // Size of training batches. 0 for full batch training.
+  optional int32 batch_size = 3;
 }

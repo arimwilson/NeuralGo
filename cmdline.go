@@ -19,22 +19,24 @@ import ("encoding/json";
 
 var serializedNetworkFlag = flag.String(
   "serialized_network", "", "File with JSON-formatted NetworkConfiguration.")
-var trainingExamplesFlag = flag.String(
-  "training_file", "",
-  "File with JSON-formatted array of training examples with values.")
-var trainingIterationsFlag = flag.Int(
-  "training_iterations", 1000, "Number of training iterations.")
-var trainingSpeedFlag = flag.Float64(
-  "training_speed", 0.001, "Speed of training.")
-var batchSizeFlag = flag.Int(
-  "batch_size", 1, "Size of batches used for training.")
-var testingExamplesFlag = flag.String(
-  "testing_file", "",
-  "File with JSON-formatted array of testing examples with values.")
 var mnistFlag = flag.String(
   "mnist", "",
   "Location of MNIST training / testing data. If non-empty, overrides " +
   "-training_file and -testing_file.")
+var trainingExamplesFlag = flag.String(
+  "training_file", "",
+  "File with JSON-formatted array of training examples with values.")
+var testingExamplesFlag = flag.String(
+  "testing_file", "",
+  "File with JSON-formatted array of testing examples with values.")
+var trainingIterationsFlag = flag.Int(
+  "training_iterations", 1000, "Number of training iterations.")
+var learningRateFlag = flag.Float64(
+  "learning_rate", 0.001, "Speed of training.")
+var weightDecayFlag = flag.Float64(
+  "weight_decay", 0, "Weight decay rate.")
+var batchSizeFlag = flag.Int(
+  "batch_size", 1, "Size of batches used for training.")
 var serializedNetworkOutFlag = flag.String(
   "serialized_network_out", "",
   "File to write JSON-formatted NetworkConfiguration.")
@@ -104,7 +106,8 @@ func main() {
   // Train the model.
   learningConfiguration := neural.LearningConfiguration{
       Epochs: proto.Int32(int32(*trainingIterationsFlag)),
-      Rate: proto.Float64(*trainingSpeedFlag),
+      Rate: proto.Float64(*learningRateFlag),
+      Decay: proto.Float64(*weightDecayFlag),
       BatchSize: proto.Int32(int32(*batchSizeFlag)),
   }
   neural.Train(neuralNetwork, trainingExamples, learningConfiguration)

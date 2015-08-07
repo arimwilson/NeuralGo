@@ -16,10 +16,10 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
     if *learningConfiguration.BatchSize == 0 {
       learningConfiguration.BatchSize = proto.Int32(int32(len(datapoints)))
     }
-    for _, index := range perm {
+    for j, index := range perm {
       neuralNetwork.Forward(datapoints[index].Features)
       neuralNetwork.Backward(datapoints[index].Values)
-      if (index + 1) % int(*learningConfiguration.BatchSize) == 0 {
+      if (j + 1) % int(*learningConfiguration.BatchSize) == 0 {
         neuralNetwork.Update(learningConfiguration)
       }
     }

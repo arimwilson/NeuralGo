@@ -1,8 +1,17 @@
 package appengine
 
-import ("appengine"; "appengine/memcache"; "encoding/json"; "fmt";
-        "github.com/golang/protobuf/proto"; "math/rand"; "net/http";
-        "strconv"; "time"; "neural")
+import (
+  "appengine";
+  "appengine/memcache";
+  "encoding/json";
+  "fmt";
+  "github.com/golang/protobuf/proto";
+  "math/rand";
+  "net/http";
+  "strconv";
+  "time";
+  "neural"
+)
 
 func init() {
   http.HandleFunc("/create", create)
@@ -203,9 +212,9 @@ func evaluate(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  // Test the model.
+  // Evaluate the example.
   w.Write([]byte(fmt.Sprintf(
-    "Evaluation: %v\n", neuralNetwork.Forward(features))))
+    "Evaluation: %v\n", neuralNetwork.Evaluate(features))))
 }
 
 func get(w http.ResponseWriter, r *http.Request) {

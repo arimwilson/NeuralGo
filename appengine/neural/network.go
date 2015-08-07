@@ -1,6 +1,11 @@
 package neural
 
-import ("encoding/json"; "github.com/golang/protobuf/proto"; "math/rand")
+import (
+  "encoding/json";
+  "github.com/golang/protobuf/proto";
+  "github.com/gonum/matrix/mat64";
+  "math/rand"
+)
 
 func NewNetwork(
     networkConfiguration NetworkConfiguration) *Network {
@@ -24,30 +29,10 @@ func (self *Network) RandomizeSynapses() {
   }
 }
 
-func (self *Network) Forward(inputs []float64) []float64 {
-  for i, input := range inputs {
-    self.Inputs[i].Input = input
-    self.Inputs[i].Forward()
-  }
-  for _, layer := range self.Layers {
-    layer.Forward()
-  }
-  outputLayer := self.Layers[len(self.Layers) - 1]
-  outputs := make([]float64, len(outputLayer.Neurons))
-  for i, neuron := range(outputLayer.Neurons) {
-    outputs[i] = neuron.Output
-  }
-  return outputs
+func (self *Network) Forward(inputs mat64.Matrix) {
 }
 
-func (self *Network) Backward(values []float64) {
-  outputLayer := self.Layers[len(self.Layers) - 1]
-  for i, neuron := range outputLayer.Neurons {
-    neuron.BackwardOutput(values[i])
-  }
-  for i := len(self.Layers) - 2; i >= 0; i-- {
-    self.Layers[i].Backward()
-  }
+func (self *Network) Backward(values mat64.Matrix) {
 }
 
 func (self *Network) Update(learningConfiguration LearningConfiguration) {
@@ -56,16 +41,10 @@ func (self *Network) Update(learningConfiguration LearningConfiguration) {
   }
 }
 
-func (self *Network) Train(inputs []float64, values []float64,
-                           learning_configuration LearningConfiguration) {
-  self.Forward(inputs)
-  outputLayer := self.Layers[len(self.Layers) - 1]
-  for i, neuron := range outputLayer.Neurons {
-    neuron.BackwardOutput(values[i])
-  }
-  for i := len(self.Layers) - 2; i >= 0; i-- {
-    self.Layers[i].Backward()
-  }
+func (self *Network) Evalaute(features []float64) []float64 {
+  inputs := mat64.Dense(1, len(features), features)
+  self.Evaluate(inputs)
+  // TODO(ariw): Extract and return outputs.
 }
 
 func (self *Network) Serialize() []byte {

@@ -1,6 +1,8 @@
 package neural
 
-import ("math")
+import (
+  "math"
+)
 
 func Activate(name ActivationFunction, x float64) float64 {
   if (name == ActivationFunction_LINEAR) {

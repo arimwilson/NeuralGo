@@ -1,40 +1,35 @@
 package neural
 
-func NewLayer(neurons int, function ActivationFunction) *Layer {
+import (
+  "github.com/gonum/matrix/mat64";
+)
+
+func NewLayer(name ActivationName, inputs int, neurons int) *Layer {
   layer := new(Layer)
-  for i := 0; i < neurons; i++ {
-    layer.Neurons = append(layer.Neurons, NewNeuron(function))
-  }
+  layer.Weights = mat64.NewDense(inputs + 1, neurons, nil)
+  layer.ActivationFunction = NewActivationFunction(name)
+  layer.DActivationFunction = NewDActivationFunction(name)
   return layer
 }
 
 type Layer struct {
-  Neurons []*Neuron
-}
-
-func (self* Layer) ConnectTo(layer *Layer) {
-  for _, neuronFrom := range self.Neurons {
-    // Fully connected between layers.
-    for _, neuronTo := range layer.Neurons {
-      neuronFrom.ConnectTo(neuronTo)
-    }
-  }
+  Input *mat64.Matrix  // examples x (inputs + 1)
+  Weights *mat64.Matrix  // (inputs + 1) x neurons
+  ActivationFunction ActivationFunction
+  Output *mat64.Matrix  // examples x neurons
+  DActivationFunction DActivationFunction
+  Gradient *mat64.Matrix  // examples x neurons
 }
 
 func (self* Layer) Forward() {
-  for _, neuron := range self.Neurons {
-    neuron.Forward()
-  }
+  self.Output.Mult(self.Input, self.Weights)
+  self.Output.Apply(
+      func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
+      self.Output)
 }
 
 func (self* Layer) Backward() {
-  for _, neuron := range self.Neurons {
-    neuron.Backward()
-  }
 }
 
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
-  for _, neuron := range self.Neurons {
-    neuron.Update(learningConfiguration)
-  }
 }

@@ -42,8 +42,8 @@ func (self *Network) Update(learningConfiguration LearningConfiguration) {
 }
 
 func (self *Network) Evalaute(features []float64) []float64 {
-  inputs := mat64.Dense(1, len(features), features)
-  self.Evaluate(inputs)
+  inputs := mat64.NewDense(1, len(features), features)
+  self.Forward(inputs)
   // TODO(ariw): Extract and return outputs.
 }
 

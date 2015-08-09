@@ -1,26 +1,20 @@
 package neural;
 
-message SynapseConfiguration {
-  optional double weight = 1;
-}
-
-message NeuronConfiguration {
-  repeated SynapseConfiguration synapse = 1;
-}
-
-enum ActivationFunction {
+enum ActivationName {
   LINEAR = 0;
   RELU = 1;
   LOGISTIC = 2;
   TANH = 3;
+  SOFTMAX = 4;
 }
 
 message LayerConfiguration {
   // Activation function for this layer.
-  optional ActivationFunction activation_function = 1;
-  // Description of the number and weights of neurons in this layer. Note that
-  // if weights are not provided, they will be randomly initialized.
-  repeated NeuronConfiguration neuron = 2;
+  optional ActivationName name = 1;
+  // Number of neurons in this layer.
+  optional int32 neurons = 2;
+  // Weights for neurons x input synapses, initialized randomly if not provided.
+  repeated double weight = 3;
 }
 
 message NetworkConfiguration {

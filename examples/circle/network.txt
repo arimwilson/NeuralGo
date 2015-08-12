@@ -1,1 +1,1 @@
-{"inputs":2,"layer":[{"activation_function":1,"neuron":[{},{},{},{},{},{},{},{},{},{}]},{"activation_function":0,"neuron":[{}]}]}
+{"inputs":2,"layer":[{"name":1,"neurons":10},{"name":0,"neurons":1}]}

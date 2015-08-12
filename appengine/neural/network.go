@@ -15,24 +15,30 @@ func NewNetwork(
 }
 
 type Network struct {
-  Inputs []*Input
   Layers []*Layer
 }
 
 func (self *Network) RandomizeSynapses() {
   for _, layer := range self.Layers {
-    for _, neuron := range layer.Neurons {
-      for _, synapse := range neuron.InputSynapses {
-        synapse.Weight = rand.Float64() - 0.5
+    rows, cols := layer.Weight.Dims()
+    for i := 0; i < rows; i++ {
+      for j := 0; j < cols; j++ {
+        layer.Weight.Set(i, j, rand.Float64() - 0.5)
       }
     }
   }
 }
 
-func (self *Network) Forward(inputs mat64.Matrix) {
+func (self *Network) Forward(inputs *mat64.Matrix) {
+  for _, layer := range self.Layers {
+    layer.Forward()
+  }
 }
 
-func (self *Network) Backward(values mat64.Matrix) {
+func (self *Network) Backward(values *mat64.Matrix) {
+  for i := len(self.Layers) - 1; i >= 0; i-- {
+    self.Layers[i].Backward()
+  }
 }
 
 func (self *Network) Update(learningConfiguration LearningConfiguration) {
@@ -44,27 +50,23 @@ func (self *Network) Update(learningConfiguration LearningConfiguration) {
 func (self *Network) Evalaute(features []float64) []float64 {
   inputs := mat64.NewDense(1, len(features), features)
   self.Forward(inputs)
-  // TODO(ariw): Extract and return outputs.
+  return self.Layers[len(self.Layers)-1].Outputs.RawRowView(0)
 }
 
 func (self *Network) Serialize() []byte {
   var networkConfiguration NetworkConfiguration
-  networkConfiguration.Inputs = proto.Int32(int32(len(self.Inputs)))
+  _, inputs := self.Layers[0].Dims()
+  networkConfiguration.Inputs = proto.Int32(int32(inputs - 1))
   for _, layer := range self.Layers {
-    // All neurons in the same layer have the same activation function.
     layerConfiguration := new(LayerConfiguration)
-    layerConfiguration.ActivationFunction =
-        layer.Neurons[0].ActivationFunction.Enum()
-    for _, neuron := range layer.Neurons {
-      neuronConfiguration := new(NeuronConfiguration)
-      for _, synapse := range neuron.InputSynapses {
-        synapseConfiguration := new(SynapseConfiguration)
-        synapseConfiguration.Weight = proto.Float64(synapse.Weight)
-        neuronConfiguration.Synapse = append(
-            neuronConfiguration.Synapse, synapseConfiguration)
+    layerConfiguration.ActivationFunction = layer.ActivationFunction.Enum()
+    rows, cols := layer.Dims()
+    layerConfiguration.Neurons = proto.Int32(int32(cols))
+    for i := 0; i < rows; i++ {
+      for j := 0; j < cols; j++ {
+        layerConfiguration.Weight = append(
+            layerConfiguration.Weight, layer.Weight.At(i, j))
       }
-      layerConfiguration.Neuron = append(
-          layerConfiguration.Neuron, neuronConfiguration)
     }
     networkConfiguration.Layer = append(
         networkConfiguration.Layer, layerConfiguration)
@@ -81,31 +83,17 @@ func (self *Network) Deserialize(byteNetwork []byte) {
 }
 
 func (self *Network) init(networkConfiguration NetworkConfiguration) {
-  self.Inputs = []*Input{}
-  for i := 0; i < int(*networkConfiguration.Inputs); i++ {
-    self.Inputs = append(self.Inputs, NewInput())
-  }
   self.Layers = []*Layer{}
-  for _, layerConfiguration := range networkConfiguration.Layer {
+  inputs := *networkConfiguration.Inputs
+  for i, layerConfiguration := range networkConfiguration.Layer {
     layer := NewLayer(
-        len(layerConfiguration.Neuron),
+        inputs, *layerConfiguration.Neurons,
         *layerConfiguration.ActivationFunction)
     self.Layers = append(self.Layers, layer)
-  }
-  // Connect all the layers.
-  for _, input := range self.Inputs {
-    input.ConnectTo(self.Layers[0])
-  }
-  for i := 0; i < len(self.Layers) - 1; i++ {
-    self.Layers[i].ConnectTo(self.Layers[i+1])
-  }
-  // Initialize weights if they were specified.
-  for i, layerConfiguration := range networkConfiguration.Layer {
-    for j, neuronConfiguration := range layerConfiguration.Neuron {
-      for k, synapseConfiguration := range neuronConfiguration.Synapse {
-        self.Layers[i].Neurons[j].InputSynapses[k].Weight =
-            *synapseConfiguration.Weight
-      }
+    inputs = *layerConfiguration.Neurons
+    // Initialize weights if they were specified.
+    for i, weight := range layerConfiguration.Weight {
+      layer.Input.Set(i / (inputs + 1), i % (inputs + 1), weight)
     }
   }
 }

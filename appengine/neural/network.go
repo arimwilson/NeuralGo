@@ -30,14 +30,21 @@ func (self *Network) RandomizeSynapses() {
 }
 
 func (self *Network) Forward(inputs *mat64.Matrix) {
+  previous := &Layer{}
+  previous.Input = inputs
   for _, layer := range self.Layers {
-    layer.Forward()
+    layer.Forward(previous)
+    previous = layer
   }
 }
 
 func (self *Network) Backward(values *mat64.Matrix) {
+  next := &Layer{}
+  next.Gradient = values
+  next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
   for i := len(self.Layers) - 1; i >= 0; i-- {
-    self.Layers[i].Backward()
+    self.Layers[i].Backward(next)
+    next = self.Layers[i]
   }
 }
 

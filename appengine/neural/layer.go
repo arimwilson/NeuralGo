@@ -4,9 +4,9 @@ import (
   "github.com/gonum/matrix/mat64";
 )
 
-func NewLayer(name ActivationName, inputs int, neurons int) *Layer {
+func NewLayer(name ActivationName, inputs int, outputs int) *Layer {
   layer := new(Layer)
-  layer.Weight = mat64.NewDense(inputs + 1, neurons, nil)
+  layer.Weight = mat64.NewDense(inputs + 1, outputs, nil)
   layer.Name = name
   layer.ActivationFunction = NewActivationFunction(layer.Name)
   layer.DActivationFunction = NewDActivationFunction(layer.Name)
@@ -14,13 +14,13 @@ func NewLayer(name ActivationName, inputs int, neurons int) *Layer {
 }
 
 type Layer struct {
-  Input mat64.Matrix  // examples x (inputs + 1)
-  Weight mat64.Matrix  // (inputs + 1) x outputs
+  Input *mat64.Dense  // examples x (inputs + 1)
+  Weight *mat64.Dense  // (inputs + 1) x outputs
   Name ActivationName
   ActivationFunction ActivationFunction
-  Output mat64.Matrix  // examples x outputs
+  Output *mat64.Dense  // examples x outputs
   DActivationFunction DActivationFunction
-  Gradient mat64.Matrix  // outputs x examples
+  Gradient *mat64.Dense  // outputs x examples
 }
 
 func (self* Layer) Forward(previous *Layer) {

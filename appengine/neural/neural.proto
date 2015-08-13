@@ -12,7 +12,7 @@ message LayerConfiguration {
   // Activation function for this layer.
   optional ActivationName name = 1;
   // Number of neurons in this layer.
-  optional int32 neurons = 2;
+  optional int32 outputs = 2;
   // Weights for neurons x input synapses, initialized randomly if not provided.
   repeated double weight = 3;
 }

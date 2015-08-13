@@ -29,7 +29,7 @@ func (self *Network) RandomizeSynapses() {
   }
 }
 
-func (self *Network) Forward(inputs mat64.Matrix) {
+func (self *Network) Forward(inputs *mat64.Dense) {
   previous := &Layer{}
   previous.Input = inputs
   for _, layer := range self.Layers {
@@ -38,7 +38,7 @@ func (self *Network) Forward(inputs mat64.Matrix) {
   }
 }
 
-func (self *Network) Backward(values mat64.Matrix) {
+func (self *Network) Backward(values *mat64.Dense) {
   next := &Layer{}
   next.Gradient = values
   next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
@@ -63,13 +63,13 @@ func (self *Network) Evaluate(features []float64) []float64 {
 
 func (self *Network) Serialize() []byte {
   var networkConfiguration NetworkConfiguration
-  _, inputs := self.Layers[0].Dims()
+  _, inputs := self.Layers[0].Weight.Dims()
   networkConfiguration.Inputs = proto.Int32(int32(inputs - 1))
   for _, layer := range self.Layers {
     layerConfiguration := new(LayerConfiguration)
-    layerConfiguration.Name = layer.Name
-    rows, cols := layer.Dims()
-    layerConfiguration.Neurons = proto.Int32(int32(cols))
+    layerConfiguration.Name = proto.Int32(int32(layer.Name))
+    rows, cols := layer.Weight.Dims()
+    layerConfiguration.Outputs = proto.Int32(int32(cols))
     for i := 0; i < rows; i++ {
       for j := 0; j < cols; j++ {
         layerConfiguration.Weight = append(
@@ -92,16 +92,14 @@ func (self *Network) Deserialize(byteNetwork []byte) {
 
 func (self *Network) init(networkConfiguration NetworkConfiguration) {
   self.Layers = []*Layer{}
-  inputs := *networkConfiguration.Inputs
+  inputs := int(*networkConfiguration.Inputs)
   for i, layerConfiguration := range networkConfiguration.Layer {
-    layer := NewLayer(
-        inputs, *layerConfiguration.Neurons,
-        *layerConfiguration.ActivationFunction)
+    outputs := int(*layerConfiguration.Outputs)
+    layer := NewLayer(*layerConfiguration.Name, inputs, outputs)
     self.Layers = append(self.Layers, layer)
-    inputs = *layerConfiguration.Neurons
     // Initialize weights if they were specified.
     for i, weight := range layerConfiguration.Weight {
-      layer.Input.Set(i / (inputs + 1), i % (inputs + 1), weight)
+      layer.Input.Set(i / (outputs + 1), i % (outputs + 1), weight)
     }
   }
 }

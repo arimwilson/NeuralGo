@@ -48,7 +48,7 @@ func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   rows, cols := self.Gradient.Dims()
   deltas := mat64.NewDense(rows, cols, nil)
   deltas.Mul(self.Gradient, self.Input)
-  deltas = deltas.T()
+  deltas = deltas.T().(*mat64.Dense)
   rows, cols = self.Weight.Dims()
   decay := mat64.NewDense(rows, cols, nil)
   decay.Scale(*learningConfiguration.Decay, self.Weight)

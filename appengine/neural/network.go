@@ -42,7 +42,7 @@ func (self *Network) Backward(values *mat64.Dense) {
   next := &Layer{}
   next.Gradient = values
   next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
-  next.Gradient = next.Gradient.T()
+  next.Gradient = next.Gradient.T().(*mat64.Dense)
   for i := len(self.Layers) - 1; i >= 0; i-- {
     self.Layers[i].Backward(next)
     next = self.Layers[i]
@@ -67,7 +67,7 @@ func (self *Network) Serialize() []byte {
   networkConfiguration.Inputs = proto.Int32(int32(inputs - 1))
   for _, layer := range self.Layers {
     layerConfiguration := new(LayerConfiguration)
-    layerConfiguration.Name = proto.Int32(int32(layer.Name))
+    *layerConfiguration.Name = layer.Name
     rows, cols := layer.Weight.Dims()
     layerConfiguration.Outputs = proto.Int32(int32(cols))
     for i := 0; i < rows; i++ {
@@ -93,7 +93,7 @@ func (self *Network) Deserialize(byteNetwork []byte) {
 func (self *Network) init(networkConfiguration NetworkConfiguration) {
   self.Layers = []*Layer{}
   inputs := int(*networkConfiguration.Inputs)
-  for i, layerConfiguration := range networkConfiguration.Layer {
+  for _, layerConfiguration := range networkConfiguration.Layer {
     outputs := int(*layerConfiguration.Outputs)
     layer := NewLayer(*layerConfiguration.Name, inputs, outputs)
     self.Layers = append(self.Layers, layer)

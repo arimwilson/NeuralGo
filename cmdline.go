@@ -100,7 +100,7 @@ func main() {
   neuralNetwork = new(neural.Network)
   neuralNetwork.Deserialize(byteNetwork)
   // If synapse weights aren't specified, randomize them.
-  if neuralNetwork.Layers[0].Neurons[0].InputSynapses[0].Weight == 0 {
+  if neuralNetwork.Layers[0].Weight.At(0, 0) == 0 {
     neuralNetwork.RandomizeSynapses()
   }
   fmt.Printf("Finished creating the network!\n")

@@ -29,7 +29,7 @@ func (self *Network) RandomizeSynapses() {
   }
 }
 
-func (self *Network) Forward(inputs *mat64.Matrix) {
+func (self *Network) Forward(inputs mat64.Matrix) {
   previous := &Layer{}
   previous.Input = inputs
   for _, layer := range self.Layers {
@@ -38,10 +38,11 @@ func (self *Network) Forward(inputs *mat64.Matrix) {
   }
 }
 
-func (self *Network) Backward(values *mat64.Matrix) {
+func (self *Network) Backward(values mat64.Matrix) {
   next := &Layer{}
   next.Gradient = values
   next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
+  next.Gradient = next.Gradient.T()
   for i := len(self.Layers) - 1; i >= 0; i-- {
     self.Layers[i].Backward(next)
     next = self.Layers[i]
@@ -54,10 +55,10 @@ func (self *Network) Update(learningConfiguration LearningConfiguration) {
   }
 }
 
-func (self *Network) Evalaute(features []float64) []float64 {
+func (self *Network) Evaluate(features []float64) []float64 {
   inputs := mat64.NewDense(1, len(features), features)
   self.Forward(inputs)
-  return self.Layers[len(self.Layers)-1].Outputs.RawRowView(0)
+  return self.Layers[len(self.Layers)-1].Output.RawRowView(0)
 }
 
 func (self *Network) Serialize() []byte {
@@ -66,7 +67,7 @@ func (self *Network) Serialize() []byte {
   networkConfiguration.Inputs = proto.Int32(int32(inputs - 1))
   for _, layer := range self.Layers {
     layerConfiguration := new(LayerConfiguration)
-    layerConfiguration.ActivationFunction = layer.ActivationFunction.Enum()
+    layerConfiguration.Name = layer.Name
     rows, cols := layer.Dims()
     layerConfiguration.Neurons = proto.Int32(int32(cols))
     for i := 0; i < rows; i++ {

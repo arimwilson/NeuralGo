@@ -15,19 +15,17 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
   // Train on some number of iterations of permuted versions of the input.
   for i := 0; i < int(*learningConfiguration.Epochs); i++ {
     perm := rand.Perm(len(datapoints))
-    batchSize := batchSize
+    batchSize := int(*learningConfiguration.BatchSize)
     // Batch size 0 means do full batch learning.
     if batchSize == 0 {
       batchSize = len(datapoints)
     }
-    features := mat64.NewDense(batchSize, len(neuralNetwork.Inputs), nil)
-    values := mat64.NewDense(
-        batchSize, len(neuralNetwork.Layers[len(neuralNetwork.Layers) - 1]),
-        nil)
+    features := mat64.NewDense(batchSize, len(datapoints[0].Features), nil)
+    values := mat64.NewDense(batchSize, len(datapoints[0].Values), nil)
     for j := 0; j < len(perm); j += batchSize {
       for k := 0; k < batchSize && j + k < len(perm); k++ {
-        features.SetRow(k, datapoints[perm[j + k].Features])
-        values.SetRow(k, datapoints[perm[j + k].Values])
+        features.SetRow(k, datapoints[perm[j + k]].Features)
+        values.SetRow(k, datapoints[perm[j + k]].Values)
       }
       // This logic will train on len(datapoints) % batchSize datapoints twice.
       // Is this a problem?

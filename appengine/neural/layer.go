@@ -7,18 +7,20 @@ import (
 func NewLayer(name ActivationName, inputs int, neurons int) *Layer {
   layer := new(Layer)
   layer.Weight = mat64.NewDense(inputs + 1, neurons, nil)
-  layer.ActivationFunction = NewActivationFunction(name)
-  layer.DActivationFunction = NewDActivationFunction(name)
+  layer.Name = name
+  layer.ActivationFunction = NewActivationFunction(layer.Name)
+  layer.DActivationFunction = NewDActivationFunction(layer.Name)
   return layer
 }
 
 type Layer struct {
-  Input *mat64.Matrix  // examples x (inputs + 1)
-  Weight *mat64.Matrix  // (inputs + 1) x outputs
+  Input mat64.Matrix  // examples x (inputs + 1)
+  Weight mat64.Matrix  // (inputs + 1) x outputs
+  Name ActivationName
   ActivationFunction ActivationFunction
-  Output *mat64.Matrix  // examples x outputs
+  Output mat64.Matrix  // examples x outputs
   DActivationFunction DActivationFunction
-  Gradient *mat64.Matrix  // outputs x examples
+  Gradient mat64.Matrix  // outputs x examples
 }
 
 func (self* Layer) Forward(previous *Layer) {
@@ -43,12 +45,14 @@ func (self* Layer) Backward(next *Layer) {
 }
 
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
-  rows, cols := self.Weight.Dims()
-  decay := self.mat64.NewDense(rows, cols, nil)
-  decay.Scale(*learningConfiguration.Decay, self.Weight)
-  rows, cols = self.Gradient.Dims()
+  rows, cols := self.Gradient.Dims()
   deltas := mat64.NewDense(rows, cols, nil)
-  deltas.Scale(*learningConfiguration.Rate,
-               deltas.Sub(deltas.Mul(self.Gradient, self.Input), decay))
+  deltas.Mul(self.Gradient, self.Input)
+  deltas = deltas.T()
+  rows, cols = self.Weight.Dims()
+  decay := mat64.NewDense(rows, cols, nil)
+  decay.Scale(*learningConfiguration.Decay, self.Weight)
+  deltas.Sub(deltas, decay)
+  deltas.Scale(*learningConfiguration.Rate, deltas)
   self.Weight.Add(self.Weight, deltas)
 }

@@ -31,7 +31,7 @@ func (self *Network) RandomizeSynapses() {
 
 func (self *Network) Forward(inputs *mat64.Dense) {
   previous := &Layer{}
-  previous.Input = inputs
+  previous.Output = inputs
   for _, layer := range self.Layers {
     layer.Forward(previous)
     previous = layer
@@ -101,5 +101,6 @@ func (self *Network) init(networkConfiguration NetworkConfiguration) {
     for i, weight := range layerConfiguration.Weight {
       layer.Input.Set(i / (outputs + 1), i % (outputs + 1), weight)
     }
+    inputs = outputs
   }
 }

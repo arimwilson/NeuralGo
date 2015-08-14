@@ -1,7 +1,8 @@
 package neural
 
 import (
-  "github.com/gonum/matrix/mat64";
+  "fmt";
+  "github.com/gonum/matrix/mat64"
 )
 
 func NewLayer(name ActivationName, inputs int, outputs int) *Layer {
@@ -9,7 +10,9 @@ func NewLayer(name ActivationName, inputs int, outputs int) *Layer {
   layer.Weight = mat64.NewDense(inputs + 1, outputs, nil)
   layer.Name = name
   layer.ActivationFunction = NewActivationFunction(layer.Name)
+  layer.Output = &mat64.Dense{}
   layer.DActivationFunction = NewDActivationFunction(layer.Name)
+  layer.Gradient = &mat64.Dense{}
   return layer
 }
 
@@ -25,13 +28,16 @@ type Layer struct {
 
 func (self* Layer) Forward(previous *Layer) {
   self.Input = previous.Output
-  rows, _ := self.Input.Dims()
+  rows, cols := self.Input.Dims()
   ones := mat64.NewDense(rows, 1, nil)
   for i := 0; i < rows; i++ {
     ones.Set(i, 0, 1.0)
   }
-  self.Input.Augment(self.Input, ones)
-  self.Output.Mul(self.Input, self.Weight)
+  input_and_bias := &mat64.Dense{}
+  input_and_bias.Augment(self.Input, ones)
+  rows2, cols2 := self.Weight.Dims()
+  fmt.Printf("input: %v %v, weight: %v %v\n", rows, cols + 1, rows2, cols2)
+  self.Output.Mul(input_and_bias, self.Weight)
   self.Output.Apply(
       func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
       self.Output)
@@ -45,12 +51,10 @@ func (self* Layer) Backward(next *Layer) {
 }
 
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
-  rows, cols := self.Gradient.Dims()
-  deltas := mat64.NewDense(rows, cols, nil)
+  deltas := &mat64.Dense{}
   deltas.Mul(self.Gradient, self.Input)
   deltas = deltas.T().(*mat64.Dense)
-  rows, cols = self.Weight.Dims()
-  decay := mat64.NewDense(rows, cols, nil)
+  decay := &mat64.Dense{}
   decay.Scale(*learningConfiguration.Decay, self.Weight)
   deltas.Sub(deltas, decay)
   deltas.Scale(*learningConfiguration.Rate, deltas)

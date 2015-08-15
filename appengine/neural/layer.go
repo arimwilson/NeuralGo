@@ -5,9 +5,10 @@ import (
   "github.com/gonum/matrix/mat64"
 )
 
-func NewLayer(name ActivationName, inputs int, outputs int) *Layer {
+func NewLayer(name ActivationName, inputs int, outputs int,
+              weight []float64) *Layer {
   layer := new(Layer)
-  layer.Weight = mat64.NewDense(inputs + 1, outputs, nil)
+  layer.Weight = mat64.NewDense(inputs + 1, outputs, weight)
   layer.Name = name
   layer.ActivationFunction = NewActivationFunction(layer.Name)
   layer.Output = &mat64.Dense{}
@@ -28,15 +29,13 @@ type Layer struct {
 
 func (self* Layer) Forward(previous *Layer) {
   self.Input = previous.Output
-  rows, cols := self.Input.Dims()
+  rows, _ := self.Input.Dims()
   ones := mat64.NewDense(rows, 1, nil)
   for i := 0; i < rows; i++ {
     ones.Set(i, 0, 1.0)
   }
   input_and_bias := &mat64.Dense{}
   input_and_bias.Augment(self.Input, ones)
-  rows2, cols2 := self.Weight.Dims()
-  fmt.Printf("input: %v %v, weight: %v %v\n", rows, cols + 1, rows2, cols2)
   self.Output.Mul(input_and_bias, self.Weight)
   self.Output.Apply(
       func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
@@ -44,7 +43,9 @@ func (self* Layer) Forward(previous *Layer) {
 }
 
 func (self* Layer) Backward(next *Layer) {
-  self.Gradient.Mul(self.Weight, next.Gradient)
+  fmt.Printf("weight: %v\n, gradient: %v\n", mat64.Formatted(self.Weight), mat64.Formatted(next.Gradient))
+  rows, cols := next.Gradient.Dims()
+  self.Gradient.Mul(self.Weight, next.Gradient.View(0, 0, rows - 1, cols))
   self.Gradient.Apply(
       func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
       self.Gradient)
@@ -53,10 +54,10 @@ func (self* Layer) Backward(next *Layer) {
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   deltas := &mat64.Dense{}
   deltas.Mul(self.Gradient, self.Input)
-  deltas = deltas.T().(*mat64.Dense)
-  decay := &mat64.Dense{}
-  decay.Scale(*learningConfiguration.Decay, self.Weight)
-  deltas.Sub(deltas, decay)
+  deltas.TCopy(deltas)
+  // decay := &mat64.Dense{}
+  // decay.Scale(*learningConfiguration.Decay, self.Weight)
+  // deltas.Sub(deltas, decay)
   deltas.Scale(*learningConfiguration.Rate, deltas)
   self.Weight.Add(self.Weight, deltas)
 }

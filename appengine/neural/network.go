@@ -2,6 +2,7 @@ package neural
 
 import (
   "encoding/json";
+  "fmt";
   "github.com/golang/protobuf/proto";
   "github.com/gonum/matrix/mat64";
   "math/rand"
@@ -32,17 +33,21 @@ func (self *Network) RandomizeSynapses() {
 func (self *Network) Forward(inputs *mat64.Dense) {
   previous := &Layer{}
   previous.Output = inputs
+  fmt.Printf("input: %v\n", mat64.Formatted(inputs))
   for _, layer := range self.Layers {
     layer.Forward(previous)
     previous = layer
   }
+  fmt.Printf("output: %v\n", mat64.Formatted(self.Layers[1].Output))
 }
 
 func (self *Network) Backward(values *mat64.Dense) {
   next := &Layer{}
+  fmt.Printf("values: %v\n", mat64.Formatted(values))
   next.Gradient = values
   next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
-  next.Gradient = next.Gradient.T().(*mat64.Dense)
+  next.Gradient.TCopy(next.Gradient)
+  next.Gradient = next.Gradient.Grow(1, 0).(*mat64.Dense)
   for i := len(self.Layers) - 1; i >= 0; i-- {
     self.Layers[i].Backward(next)
     next = self.Layers[i]
@@ -95,12 +100,9 @@ func (self *Network) init(networkConfiguration NetworkConfiguration) {
   inputs := int(*networkConfiguration.Inputs)
   for _, layerConfiguration := range networkConfiguration.Layer {
     outputs := int(*layerConfiguration.Outputs)
-    layer := NewLayer(*layerConfiguration.Name, inputs, outputs)
+    layer := NewLayer(*layerConfiguration.Name, inputs, outputs,
+                      layerConfiguration.Weight)
     self.Layers = append(self.Layers, layer)
-    // Initialize weights if they were specified.
-    for i, weight := range layerConfiguration.Weight {
-      layer.Input.Set(i / (outputs + 1), i % (outputs + 1), weight)
-    }
     inputs = outputs
   }
 }

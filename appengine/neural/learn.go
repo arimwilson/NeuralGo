@@ -10,6 +10,13 @@ type Datapoint struct {
   Values []float64
 }
 
+func min(a, b int) int {
+  if a < b {
+    return a
+  }
+  return b
+}
+
 func Train(neuralNetwork *Network, datapoints []Datapoint,
            learningConfiguration LearningConfiguration) {
   // Train on some number of iterations of permuted versions of the input.
@@ -20,15 +27,14 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
     if batchSize == 0 {
       batchSize = len(datapoints)
     }
-    features := mat64.NewDense(batchSize, len(datapoints[0].Features), nil)
-    values := mat64.NewDense(batchSize, len(datapoints[0].Values), nil)
     for j := 0; j < len(perm); j += batchSize {
-      for k := 0; k < batchSize && j + k < len(perm); k++ {
+      size := min(batchSize, len(perm) - j)
+      features := mat64.NewDense(size, len(datapoints[0].Features), nil)
+      values := mat64.NewDense(size, len(datapoints[0].Values), nil)
+      for k := 0; k < size; k++ {
         features.SetRow(k, datapoints[perm[j + k]].Features)
         values.SetRow(k, datapoints[perm[j + k]].Values)
       }
-      // This logic will train on len(datapoints) % batchSize datapoints twice.
-      // Is this a problem?
       neuralNetwork.Forward(features)
       neuralNetwork.Backward(values)
       neuralNetwork.Update(learningConfiguration)

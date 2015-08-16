@@ -41,12 +41,9 @@ func (self *Network) Forward(inputs *mat64.Dense) {
 }
 
 func (self *Network) Backward(values *mat64.Dense) {
-  next := &Layer{}
-  next.Gradient = values
-  next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
-  next.Gradient.TCopy(next.Gradient)
-  next.Gradient = next.Gradient.Grow(1, 0).(*mat64.Dense)
-  for i := len(self.Layers) - 1; i >= 0; i-- {
+  next := self.Layers[len(self.Layers) - 1]
+  next.BackwardOutput(values)
+  for i := len(self.Layers) - 2; i >= 0; i-- {
     self.Layers[i].Backward(next)
     next = self.Layers[i]
   }

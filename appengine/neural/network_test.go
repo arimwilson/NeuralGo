@@ -10,13 +10,13 @@ import (
 
 // Example generated from
 // http://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
-func CreateSimpleNetwork() *neural.Network {
+func CreateSimpleNetwork(t *testing.T) *neural.Network {
   neuralNetwork := new(neural.Network)
   if err := neuralNetwork.Deserialize([]byte(
       "{\"inputs\":2,\"layer\":[{\"name\":2,\"outputs\":2,\"weight\":[0.15," +
       "0.25,0.2,0.3,0.35,0.35]},{\"name\":2,\"outputs\":2,\"weight\":[0.4," +
       "0.5,0.45,0.55,0.6,0.6]}]}")); err != nil {
-    fmt.Printf("%v\n", err)
+    t.Fail()
   }
   return neuralNetwork
 }
@@ -27,19 +27,19 @@ func approximatelyEqual(a, b, tolerance float64) bool {
 }
 
 func TestForward(t *testing.T) {
-  neuralNetwork := CreateSimpleNetwork()
+  neuralNetwork := CreateSimpleNetwork(t)
   inputs := []float64{0.05, 0.10}
   outputs := neuralNetwork.Evaluate(inputs)
   if !approximatelyEqual(0.75136507, outputs[0], 0.001) {
-    t.Error(fmt.Sprintf("outputs[0] %v unexpected", outputs[0]))
+    t.Errorf("output %v unexpected", outputs[0])
   }
   if !approximatelyEqual(0.772928465, outputs[1], 0.001) {
-    t.Error(fmt.Sprintf("outputs[1] %v unexpected", outputs[1]))
+    t.Errorf("output %v unexpected", outputs[1])
   }
 }
 
 func TestBackward(t *testing.T) {
-  neuralNetwork := CreateSimpleNetwork()
+  neuralNetwork := CreateSimpleNetwork(t)
   inputs := mat64.NewDense(1, 2, []float64{0.05, 0.10})
   neuralNetwork.Forward(inputs)
   values := mat64.NewDense(1, 2, []float64{0.01, 0.99})
@@ -47,7 +47,7 @@ func TestBackward(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-  neuralNetwork := CreateSimpleNetwork()
+  neuralNetwork := CreateSimpleNetwork(t)
   inputs := mat64.NewDense(1, 2, []float64{0.05, 0.10})
   neuralNetwork.Forward(inputs)
   values := mat64.NewDense(1, 2, []float64{0.01, 0.99})

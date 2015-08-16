@@ -2,6 +2,7 @@ package neural
 
 import (
   "encoding/json";
+  "bytes";
   "fmt";
   "github.com/golang/protobuf/proto";
   "github.com/gonum/matrix/mat64";
@@ -33,17 +34,14 @@ func (self *Network) RandomizeSynapses() {
 func (self *Network) Forward(inputs *mat64.Dense) {
   previous := &Layer{}
   previous.Output = inputs
-  fmt.Printf("input: %v\n", mat64.Formatted(inputs))
   for _, layer := range self.Layers {
     layer.Forward(previous)
     previous = layer
   }
-  fmt.Printf("output: %v\n", mat64.Formatted(self.Layers[1].Output))
 }
 
 func (self *Network) Backward(values *mat64.Dense) {
   next := &Layer{}
-  fmt.Printf("values: %v\n", mat64.Formatted(values))
   next.Gradient = values
   next.Gradient.Sub(next.Gradient, self.Layers[len(self.Layers) - 1].Output)
   next.Gradient.TCopy(next.Gradient)
@@ -89,10 +87,21 @@ func (self *Network) Serialize() []byte {
   return byteNetwork
 }
 
-func (self *Network) Deserialize(byteNetwork []byte) {
+func (self *Network) Deserialize(byteNetwork []byte) error {
   var networkConfiguration NetworkConfiguration
-  json.Unmarshal(byteNetwork, &networkConfiguration)
+  if err := json.Unmarshal(byteNetwork, &networkConfiguration); err != nil {
+    return err
+  }
   self.init(networkConfiguration)
+  return nil
+}
+
+func (self *Network) DebugString() string {
+  var buffer bytes.Buffer
+  for i, layer := range self.Layers {
+    buffer.WriteString(fmt.Sprintf("layer %v:\n%v", i, layer.DebugString()))
+  }
+  return buffer.String()
 }
 
 func (self *Network) init(networkConfiguration NetworkConfiguration) {

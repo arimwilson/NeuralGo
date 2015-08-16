@@ -34,6 +34,7 @@ func (self* Layer) Forward(previous *Layer) {
   for i := 0; i < rows; i++ {
     ones.Set(i, 0, 1.0)
   }
+  // Add bias to input.
   input_and_bias := &mat64.Dense{}
   input_and_bias.Augment(self.Input, ones)
   self.Output.Mul(input_and_bias, self.Weight)
@@ -43,8 +44,8 @@ func (self* Layer) Forward(previous *Layer) {
 }
 
 func (self* Layer) Backward(next *Layer) {
-  fmt.Printf("weight: %v\n, gradient: %v\n", mat64.Formatted(self.Weight), mat64.Formatted(next.Gradient))
   rows, cols := next.Gradient.Dims()
+  // Don't look at gradient bias from next layer when backpropagating.
   self.Gradient.Mul(self.Weight, next.Gradient.View(0, 0, rows - 1, cols))
   self.Gradient.Apply(
       func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
@@ -54,10 +55,19 @@ func (self* Layer) Backward(next *Layer) {
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   deltas := &mat64.Dense{}
   deltas.Mul(self.Gradient, self.Input)
-  deltas.TCopy(deltas)
+  // deltas.TCopy(deltas)
   // decay := &mat64.Dense{}
   // decay.Scale(*learningConfiguration.Decay, self.Weight)
   // deltas.Sub(deltas, decay)
   deltas.Scale(*learningConfiguration.Rate, deltas)
   self.Weight.Add(self.Weight, deltas)
+}
+
+func (self* Layer) DebugString() string {
+  return fmt.Sprintf(
+      "input: %v\nweight: %v\nname: %v\noutput: %v\ngradient: %v\n",
+      mat64.Formatted(self.Input, mat64.Prefix("       ")),
+      mat64.Formatted(self.Weight, mat64.Prefix("        ")), self.Name,
+      mat64.Formatted(self.Output, mat64.Prefix("        ")),
+      mat64.Formatted(self.Gradient, mat64.Prefix("          ")))
 }

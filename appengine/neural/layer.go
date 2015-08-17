@@ -45,18 +45,24 @@ func (self* Layer) Forward(previous *Layer) {
 
 func (self* Layer) Backward(next *Layer) {
   rows, cols := self.Weight.Dims()
-  // Don't look at bias weights from next layer when backpropagating.
-  self.Gradient.Mul(self.Weight.View(0, 0, rows - 1, cols), next.Gradient)
   dOutput := &mat64.Dense{}
   dOutput.Apply(
       func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
       self.Output)
   dOutput.TCopy(dOutput)
+
+  // Don't look at bias weights from next layer when backpropagating.
+  self.Gradient.Mul(self.Weight.View(0, 0, rows - 1, cols), next.Gradient)
   self.Gradient.MulElem(self.Gradient, dOutput)
 }
 
 func (self* Layer) BackwardOutput(values *mat64.Dense) {
   self.Gradient.Sub(values, self.Output)
+  dOutput := &mat64.Dense{}
+  dOutput.Apply(
+      func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
+      self.Output)
+  self.Gradient.MulElem(self.Gradient, dOutput)
   self.Gradient.TCopy(self.Gradient)
 }
 
@@ -67,8 +73,10 @@ func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   decay := &mat64.Dense{}
   rows, cols := self.Weight.Dims()
   weight := self.Weight.View(0, 0, rows - 1, cols).(*mat64.Dense)
-  decay.Scale(*learningConfiguration.Decay, weight)
-  deltas.Sub(deltas, decay)
+  if *learningConfiguration.Decay > 0 {
+    decay.Scale(*learningConfiguration.Decay, weight)
+    deltas.Sub(deltas, decay)
+  }
   deltas.Scale(*learningConfiguration.Rate, deltas)
   weight.Add(weight, deltas)
 }

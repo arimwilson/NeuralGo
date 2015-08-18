@@ -38,31 +38,27 @@ func (self* Layer) Forward(previous *Layer) {
   inputAndBias := &mat64.Dense{}
   inputAndBias.Augment(self.Input, ones)
   self.Output.Mul(inputAndBias, self.Weight)
+  self.Gradient.Apply(
+      func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
+     self.Output)
   self.Output.Apply(
       func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
       self.Output)
 }
 
+// AUGH THE FUCK UP IS HERE
 func (self* Layer) Backward(next *Layer) {
+  gradient := &mat64.Dense{}
   rows, cols := self.Weight.Dims()
-  dOutput := &mat64.Dense{}
-  dOutput.Apply(
-      func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
-      self.Output)
-  dOutput.TCopy(dOutput)
-
   // Don't look at bias weights from next layer when backpropagating.
-  self.Gradient.Mul(self.Weight.View(0, 0, rows - 1, cols), next.Gradient)
-  self.Gradient.MulElem(self.Gradient, dOutput)
+  gradient.Mul(self.Weight.View(0, 0, rows - 1, cols), next.Gradient)
+  self.Gradient.TCopy(self.Gradient)
+  self.Gradient.MulElem(gradient, self.Gradient)
 }
 
 func (self* Layer) BackwardOutput(values *mat64.Dense) {
-  self.Gradient.Sub(values, self.Output)
-  dOutput := &mat64.Dense{}
-  dOutput.Apply(
-      func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
-      self.Output)
-  self.Gradient.MulElem(self.Gradient, dOutput)
+  values.Sub(self.Output, values)
+  self.Gradient.MulElem(values, self.Gradient)
   self.Gradient.TCopy(self.Gradient)
 }
 
@@ -78,7 +74,7 @@ func (self* Layer) Update(learningConfiguration LearningConfiguration) {
     deltas.Sub(deltas, decay)
   }
   deltas.Scale(*learningConfiguration.Rate, deltas)
-  weight.Add(weight, deltas)
+  weight.Sub(weight, deltas)
 }
 
 func (self* Layer) DebugString() string {

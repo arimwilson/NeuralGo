@@ -29,10 +29,10 @@ func TestForward(t *testing.T) {
   neuralNetwork := CreateSimpleNetwork(t)
   inputs := []float64{0.05, 0.10}
   outputs := neuralNetwork.Evaluate(inputs)
-  if !equalsApprox(0.75136507, outputs[0], 0.001) {
+  if !equalsApprox(0.75136507, outputs[0], 0.0001) {
     t.Errorf("output 0 %v unexpected", outputs[0])
   }
-  if !equalsApprox(0.772928465, outputs[1], 0.001) {
+  if !equalsApprox(0.772928465, outputs[1], 0.0001) {
     t.Errorf("output 1 %v unexpected", outputs[1])
   }
 }
@@ -43,11 +43,15 @@ func TestBackward(t *testing.T) {
   neuralNetwork.Forward(inputs)
   values := mat64.NewDense(1, 2, []float64{0.01, 0.99})
   neuralNetwork.Backward(values)
-  // TODO(ariw): Add check for expected gradient 0.
   expected_gradient_1 := mat64.NewDense(2, 1, []float64{0.13849856, -0.03809824})
-  if !neuralNetwork.Layers[1].Gradient.EqualsApprox(expected_gradient_1, 0.001) {
+  if !neuralNetwork.Layers[1].Gradient.EqualsApprox(expected_gradient_1, 0.0001) {
     t.Errorf("gradient 1 unexpected:\n%v",
              mat64.Formatted(neuralNetwork.Layers[1].Gradient))
+  }
+  // TODO(ariw): Fill in the other value of layer 0's gradient when known.
+  if !equalsApprox(0.0087714, neuralNetwork.Layers[0].Gradient.At(0, 0), 0.0001) {
+    t.Errorf("gradient 0 unexpected:\n%v",
+             mat64.Formatted(neuralNetwork.Layers[0].Gradient))
   }
 }
 
@@ -67,14 +71,14 @@ func TestUpdate(t *testing.T) {
   expected_weights_0 := mat64.NewDense(
       3, 2, []float64{0.149780716, 0.24975114, 0.19956143, 0.29950229, 0.35,
                       0.35})
-  if !neuralNetwork.Layers[0].Weight.EqualsApprox(expected_weights_0, 0.001) {
+  if !neuralNetwork.Layers[0].Weight.EqualsApprox(expected_weights_0, 0.0001) {
     t.Errorf("weights 0 unexpected:\n%v",
              mat64.Formatted(neuralNetwork.Layers[0].Weight))
   }
   expected_weights_1 := mat64.NewDense(
       3, 2, []float64{0.35891648, 0.51130127, 0.408666186, 0.561370121, 0.6,
                       0.6})
-  if !neuralNetwork.Layers[1].Weight.EqualsApprox(expected_weights_1, 0.001) {
+  if !neuralNetwork.Layers[1].Weight.EqualsApprox(expected_weights_1, 0.0001) {
     t.Errorf("weights 1 unexpected:\n%v",
              mat64.Formatted(neuralNetwork.Layers[1].Weight))
   }

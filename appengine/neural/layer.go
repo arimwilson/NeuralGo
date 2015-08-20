@@ -45,8 +45,7 @@ func (self* Layer) Forward(previous *Layer) {
   self.Derivatives = &mat64.Dense{}
   self.Derivatives.Apply(
      func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
-     self.Output)
-  self.Derivatives.TCopy(self.Derivatives)
+     self.Output.T())
   self.Output.Apply(
       func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
       self.Output)
@@ -61,23 +60,21 @@ func (self* Layer) Backward(next *Layer) {
 
 func (self* Layer) BackwardOutput(values *mat64.Dense) {
   values.Sub(self.Output, values)
-  values.TCopy(values)
-  self.Deltas.MulElem(values, self.Derivatives)
+  self.Deltas.MulElem(values.T(), self.Derivatives)
 }
 
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   deltas := &mat64.Dense{}
   deltas.Mul(self.Deltas, self.Input)
-  deltas.TCopy(deltas)
-  decay := &mat64.Dense{}
   rows, cols := self.Weight.Dims()
   weight := self.Weight.View(0, 0, rows - 1, cols).(*mat64.Dense)
   if *learningConfiguration.Decay > 0 {
+    decay := &mat64.Dense{}
     decay.Scale(*learningConfiguration.Decay, weight)
-    deltas.Sub(deltas, decay)
+    deltas.Sub(deltas, decay.T())
   }
   deltas.Scale(*learningConfiguration.Rate, deltas)
-  weight.Sub(weight, deltas)
+  weight.Sub(weight, deltas.T())
 }
 
 func (self* Layer) DebugString() string {

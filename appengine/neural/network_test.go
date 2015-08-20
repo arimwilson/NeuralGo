@@ -44,14 +44,15 @@ func TestBackward(t *testing.T) {
   values := mat64.NewDense(1, 2, []float64{0.01, 0.99})
   neuralNetwork.Backward(values)
   expected_gradient_1 := mat64.NewDense(2, 1, []float64{0.13849856, -0.03809824})
-  if !neuralNetwork.Layers[1].Gradient.EqualsApprox(expected_gradient_1, 0.0001) {
+  if !neuralNetwork.Layers[1].Deltas.EqualsApprox(expected_gradient_1, 0.0001) {
     t.Errorf("gradient 1 unexpected:\n%v",
-             mat64.Formatted(neuralNetwork.Layers[1].Gradient))
+             mat64.Formatted(neuralNetwork.Layers[1].Deltas))
   }
   // TODO(ariw): Fill in the other value of layer 0's gradient when known.
-  if !equalsApprox(0.0087714, neuralNetwork.Layers[0].Gradient.At(0, 0), 0.0001) {
+  if !equalsApprox(0.00877136, neuralNetwork.Layers[0].Deltas.At(0, 0),
+                   0.0001) {
     t.Errorf("gradient 0 unexpected:\n%v",
-             mat64.Formatted(neuralNetwork.Layers[0].Gradient))
+             mat64.Formatted(neuralNetwork.Layers[0].Deltas))
   }
 }
 

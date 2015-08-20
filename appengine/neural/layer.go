@@ -8,23 +8,27 @@ import (
 func NewLayer(name ActivationName, inputs int, outputs int,
               weight []float64) *Layer {
   layer := new(Layer)
-  layer.Weight = mat64.NewDense(inputs + 1, outputs, weight)
   layer.Name = name
   layer.ActivationFunction = NewActivationFunction(layer.Name)
-  layer.Output = &mat64.Dense{}
   layer.DActivationFunction = NewDActivationFunction(layer.Name)
-  layer.Gradient = &mat64.Dense{}
+
+  layer.Weight = mat64.NewDense(inputs + 1, outputs, weight)
+  layer.Output = &mat64.Dense{}
+  layer.Deltas = &mat64.Dense{}
+  layer.Derivatives = &mat64.Dense{}
   return layer
 }
 
 type Layer struct {
-  Input *mat64.Dense  // examples x (inputs + 1)
-  Weight *mat64.Dense  // (inputs + 1) x outputs
   Name ActivationName
   ActivationFunction ActivationFunction
-  Output *mat64.Dense  // examples x outputs
   DActivationFunction DActivationFunction
-  Gradient *mat64.Dense  // outputs x examples
+
+  Weight *mat64.Dense  // (inputs + 1) x outputs
+  Input *mat64.Dense  // examples x (inputs + 1)
+  Output *mat64.Dense  // examples x outputs
+  Deltas *mat64.Dense  // outputs x examples
+  Derivatives *mat64.Dense  // outputs x examples
 }
 
 func (self* Layer) Forward(previous *Layer) {
@@ -38,33 +42,32 @@ func (self* Layer) Forward(previous *Layer) {
   inputAndBias := &mat64.Dense{}
   inputAndBias.Augment(self.Input, ones)
   self.Output.Mul(inputAndBias, self.Weight)
-  self.Gradient.Apply(
-      func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
+  self.Derivatives = &mat64.Dense{}
+  self.Derivatives.Apply(
+     func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
      self.Output)
+  self.Derivatives.TCopy(self.Derivatives)
   self.Output.Apply(
       func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
       self.Output)
 }
 
-// AUGH THE FUCK UP IS HERE
 func (self* Layer) Backward(next *Layer) {
-  gradient := &mat64.Dense{}
-  rows, cols := self.Weight.Dims()
+  rows, cols := next.Weight.Dims()
   // Don't look at bias weights from next layer when backpropagating.
-  gradient.Mul(self.Weight.View(0, 0, rows - 1, cols), next.Gradient)
-  self.Gradient.TCopy(self.Gradient)
-  self.Gradient.MulElem(gradient, self.Gradient)
+  self.Deltas.Mul(next.Weight.View(0, 0, rows - 1, cols), next.Deltas)
+  self.Deltas.MulElem(self.Deltas, self.Derivatives)
 }
 
 func (self* Layer) BackwardOutput(values *mat64.Dense) {
   values.Sub(self.Output, values)
-  self.Gradient.MulElem(values, self.Gradient)
-  self.Gradient.TCopy(self.Gradient)
+  values.TCopy(values)
+  self.Deltas.MulElem(values, self.Derivatives)
 }
 
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
   deltas := &mat64.Dense{}
-  deltas.Mul(self.Gradient, self.Input)
+  deltas.Mul(self.Deltas, self.Input)
   deltas.TCopy(deltas)
   decay := &mat64.Dense{}
   rows, cols := self.Weight.Dims()
@@ -79,9 +82,11 @@ func (self* Layer) Update(learningConfiguration LearningConfiguration) {
 
 func (self* Layer) DebugString() string {
   return fmt.Sprintf(
-      "input: %v\nweight: %v\nname: %v\noutput: %v\ngradient: %v\n",
-      mat64.Formatted(self.Input, mat64.Prefix("       ")),
-      mat64.Formatted(self.Weight, mat64.Prefix("        ")), self.Name,
+      "name: %v\nweight: %v\ninput: %v\noutput: %v\ndeltas: %v\nderivatives: " +
+      "%v\n", self.Name,
+      mat64.Formatted(self.Weight, mat64.Prefix("        ")),
+      mat64.Formatted(self.Input, mat64.Prefix("        ")),
       mat64.Formatted(self.Output, mat64.Prefix("        ")),
-      mat64.Formatted(self.Gradient, mat64.Prefix("          ")))
+      mat64.Formatted(self.Deltas, mat64.Prefix("        ")),
+      mat64.Formatted(self.Derivatives, mat64.Prefix("             ")))
 }

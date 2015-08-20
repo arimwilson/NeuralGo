@@ -29,7 +29,7 @@ message LearningConfiguration {
   optional int32 epochs = 1;
   // Fixed learning rate.
   optional double rate = 2;
-  // Weight decay rate.
+  // Weight decay rate (L2 regularization).
   optional double decay = 4;
   // Size of training batches. 0 for full batch training.
   optional int32 batch_size = 3;

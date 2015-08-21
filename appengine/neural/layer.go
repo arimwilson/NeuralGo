@@ -31,6 +31,7 @@ type Layer struct {
   Derivatives *mat64.Dense  // outputs x examples
 }
 
+// TODO(ariw): Delete any matrix creation in layer operations.
 func (self* Layer) Forward(previous *Layer) {
   self.Input = previous.Output
   rows, _ := self.Input.Dims()

@@ -1,63 +1,66 @@
 package neural
 
 import (
+  "github.com/gonum/matrix/mat64";
   "math"
 )
 
-type ActivationFunction func(x float64) float64
+type ActivationFunction func(x mat64.Matrix, y *mat64.Dense)
 
 func NewActivationFunction(name ActivationName) ActivationFunction {
   if (name == ActivationName_LINEAR) {
-    return func(x float64) float64 {
-      return x
-    }
+    return func(x mat64.Matrix, y *mat64.Dense) { y.Clone(x) }
   } else if (name == ActivationName_RELU) {
-    return func(x float64) float64 {
-      return math.Max(0, x)
+    return func(x mat64.Matrix, y *mat64.Dense) {
+      y.Apply(func(r, c int, v float64) float64 { return math.Max(0, v) }, x)
     }
   } else if (name == ActivationName_LOGISTIC) {
-    return func(x float64) float64 {
-      return 1 / (1 + math.Exp(-x))
+    return func(x mat64.Matrix, y *mat64.Dense) {
+      y.Apply(func(r, c int, v float64) float64 {
+        return 1 / (1 + math.Exp(-v))
+      }, x)
     }
   } else if (name == ActivationName_TANH) {
-    return func(x float64) float64 {
-      return math.Tanh(x)
+    return func(x mat64.Matrix, y *mat64.Dense) {
+      y.Apply(func(r, c int, v float64) float64 { return math.Tanh(v) }, x)
     }
   } else {
-    return func(x float64) float64 {
-      return 0
-    }
+    return func(x mat64.Matrix, y *mat64.Dense) { y.Clone(x) }
   }
 }
 
-type DActivationFunction func(y float64) float64
+type DActivationFunction func(y mat64.Matrix, x *mat64.Dense)
 
 func NewDActivationFunction(name ActivationName) DActivationFunction {
   if (name == ActivationName_LINEAR) {
-    return func(y float64) float64 {
-      return 1
+    return func(y mat64.Matrix, x *mat64.Dense) {
+      x.Apply(func(r, c int, v float64) float64 { return 1 }, y)
     }
   } else if (name == ActivationName_RELU) {
-    return func(y float64) float64 {
-      if y <= 0 {
-        return 0
-      }
-      return 1
+    return func(y mat64.Matrix, x *mat64.Dense) {
+      x.Apply(func(r, c int, v float64) float64 {
+        if v <= 0 {
+         return 0
+        }
+        return 1
+      }, y)
     }
   } else if (name == ActivationName_LOGISTIC) {
-    return func(y float64) float64 {
-      logistic := 1 / (1 + math.Exp(-y))
-      return logistic * (1 - logistic)
+    return func(y mat64.Matrix, x *mat64.Dense) {
+      x.Apply(func(r, c int, v float64) float64 {
+        logistic := 1 / (1 + math.Exp(-v))
+        return logistic * (1 - logistic)
+      }, y)
     }
   } else if (name == ActivationName_TANH) {
-    return func(y float64) float64 {
-      tanh := math.Tanh(y)
-      return 1 - tanh * tanh
+    return func(y mat64.Matrix, x *mat64.Dense) {
+      x.Apply(func(r, c int, v float64) float64 {
+        tanh := math.Tanh(v)
+        return 1 - tanh * tanh
+      }, y)
     }
   } else {
-    return func(y float64) float64 {
-      return 0
-    }
+    return func(y mat64.Matrix, x *mat64.Dense) {}
   }
 }
 

@@ -43,12 +43,8 @@ func (self* Layer) Forward(previous *Layer) {
   inputAndBias.Augment(self.Input, ones)
   self.Output.Mul(inputAndBias, self.Weight)
   self.Derivatives = &mat64.Dense{}
-  self.Derivatives.Apply(
-     func (r, c int, v float64) float64 { return self.DActivationFunction(v) },
-     self.Output.T())
-  self.Output.Apply(
-      func (r, c int, v float64) float64 { return self.ActivationFunction(v) },
-      self.Output)
+  self.DActivationFunction(self.Output.T(), self.Derivatives)
+  self.ActivationFunction(self.Output, self.Output)
 }
 
 func (self* Layer) Backward(next *Layer) {

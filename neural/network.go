@@ -25,7 +25,7 @@ func (self *Network) RandomizeSynapses() {
     rows, cols := layer.Weight.Dims()
     for i := 0; i < rows; i++ {
       for j := 0; j < cols; j++ {
-        layer.Weight.Set(i, j, rand.Float64() - 0.5)
+        layer.Weight.Set(i, j, rand.NormFloat64())
       }
     }
   }

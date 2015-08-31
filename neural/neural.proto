@@ -5,7 +5,7 @@ enum ActivationName {
   RELU = 1;
   LOGISTIC = 2;
   TANH = 3;
-  SOFTMAX = 4;
+  SOFTMAX = 4;  // TODO(ariw): Make this work.
 }
 
 message LayerConfiguration {

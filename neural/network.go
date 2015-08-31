@@ -63,11 +63,11 @@ func (self *Network) Evaluate(features []float64) []float64 {
 
 func (self *Network) Serialize() []byte {
   var networkConfiguration NetworkConfiguration
-  _, inputs := self.Layers[0].Weight.Dims()
+  inputs, _ := self.Layers[0].Weight.Dims()
   networkConfiguration.Inputs = proto.Int32(int32(inputs - 1))
   for _, layer := range self.Layers {
     layerConfiguration := new(LayerConfiguration)
-    *layerConfiguration.Name = layer.Name
+    layerConfiguration.Name = layer.Name.Enum()
     rows, cols := layer.Weight.Dims()
     layerConfiguration.Outputs = proto.Int32(int32(cols))
     for i := 0; i < rows; i++ {

@@ -1,3 +1,4 @@
+// +build !appengine
 // Feed-forward neural network training & execution on a simple supervised
 // regression problem.
 //
@@ -16,7 +17,7 @@ import (
   "log";
   "math/rand";
   "time";
-  "./appengine/neural"
+  "./neural"
 )
 
 var serializedNetworkFlag = flag.String(

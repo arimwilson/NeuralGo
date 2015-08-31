@@ -16,6 +16,8 @@ import (
   "io/ioutil";
   "log";
   "math/rand";
+  "os";
+  "runtime/pprof";
   "time";
   "./neural"
 )
@@ -43,6 +45,8 @@ var batchSizeFlag = flag.Int(
 var serializedNetworkOutFlag = flag.String(
   "serialized_network_out", "",
   "File to write JSON-formatted NetworkConfiguration.")
+var cpuProfileFlag = flag.String(
+  "cpu_profile", "", "Write CPU profile to file.")
 
 func ReadDatapointsOrDie(filename string) []neural.Datapoint {
   bytes, err := ioutil.ReadFile(filename)
@@ -59,6 +63,15 @@ func ReadDatapointsOrDie(filename string) []neural.Datapoint {
 
 func main() {
   flag.Parse()
+  if *cpuProfileFlag != "" {
+    f, err := os.Create(*cpuProfileFlag)
+    if err != nil {
+      log.Fatal(err)
+    }
+    pprof.StartCPUProfile(f)
+    defer pprof.StopCPUProfile()
+  }
+
   rand.Seed(time.Now().UTC().UnixNano())
 
   // Set up neural network.

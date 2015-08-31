@@ -23,9 +23,10 @@ type Layer struct {
   Name ActivationName
   ActivationFunction ActivationFunction
   DActivationFunction DActivationFunction
-
   Weight *mat64.Dense  // (inputs + 1) x outputs
+
   Input *mat64.Dense  // examples x (inputs + 1)
+  Ones *mat64.Dense  // examples x 1
   Output *mat64.Dense  // examples x outputs
   Deltas *mat64.Dense  // outputs x examples
   Derivatives *mat64.Dense  // outputs x examples
@@ -33,17 +34,11 @@ type Layer struct {
 
 // TODO(ariw): Delete any matrix creation in layer operations.
 func (self* Layer) Forward(previous *Layer) {
+  self.resetForExamples(previous)
   self.Input = previous.Output
-  rows, _ := self.Input.Dims()
-  ones := mat64.NewDense(rows, 1, nil)
-  for i := 0; i < rows; i++ {
-    ones.Set(i, 0, 1.0)
-  }
-  // Add bias to input.
-  inputAndBias := &mat64.Dense{}
-  inputAndBias.Augment(self.Input, ones)
-  self.Output.Mul(inputAndBias, self.Weight)
-  self.Derivatives = &mat64.Dense{}
+  var inputAndBias mat64.Dense
+  inputAndBias.Augment(self.Input, self.Ones)  // Add bias to input.
+  self.Output.Mul(&inputAndBias, self.Weight)
   self.DActivationFunction(self.Output.T(), self.Derivatives)
   self.ActivationFunction(self.Output, self.Output)
 }
@@ -61,16 +56,16 @@ func (self* Layer) BackwardOutput(values *mat64.Dense) {
 }
 
 func (self* Layer) Update(learningConfiguration LearningConfiguration) {
-  deltas := &mat64.Dense{}
+  var deltas mat64.Dense
   deltas.Mul(self.Deltas, self.Input)
   rows, cols := self.Weight.Dims()
   weight := self.Weight.View(0, 0, rows - 1, cols).(*mat64.Dense)
   if *learningConfiguration.Decay > 0 {
-    decay := &mat64.Dense{}
+    var decay mat64.Dense
     decay.Scale(*learningConfiguration.Decay, weight)
-    deltas.Sub(deltas, decay.T())
+    deltas.Sub(&deltas, decay.T())
   }
-  deltas.Scale(*learningConfiguration.Rate, deltas)
+  deltas.Scale(*learningConfiguration.Rate, &deltas)
   weight.Sub(weight, deltas.T())
 }
 
@@ -83,4 +78,20 @@ func (self* Layer) DebugString() string {
       mat64.Formatted(self.Output, mat64.Prefix("        ")),
       mat64.Formatted(self.Deltas, mat64.Prefix("        ")),
       mat64.Formatted(self.Derivatives, mat64.Prefix("             ")))
+}
+
+// Check if we need to reset internal state for this activation of the network.
+func (self* Layer) resetForExamples(previous *Layer) {
+  previousExamples, _ := self.Output.Dims()
+  examples, _ := previous.Output.Dims()
+  if previousExamples != examples {
+    self.Output.Reset()
+    self.Deltas.Reset()
+    self.Derivatives.Reset()
+    ones := make([]float64, examples)
+    for i, _ := range ones {
+      ones[i] = 1.0
+    }
+    self.Ones = mat64.NewDense(examples, 1, ones)
+  }
 }

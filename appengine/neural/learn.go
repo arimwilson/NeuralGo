@@ -20,18 +20,19 @@ func min(a, b int) int {
 func Train(neuralNetwork *Network, datapoints []Datapoint,
            learningConfiguration LearningConfiguration) {
   // Train on some number of iterations of permuted versions of the input.
+  batchSize := int(*learningConfiguration.BatchSize)
+  // Batch size 0 means do full batch learning.
+  if batchSize == 0 {
+    batchSize = len(datapoints)
+  }
+  features := mat64.NewDense(batchSize, len(datapoints[0].Features), nil)
+  values := mat64.NewDense(batchSize, len(datapoints[0].Values), nil)
   for i := 0; i < int(*learningConfiguration.Epochs); i++ {
     perm := rand.Perm(len(datapoints))
-    batchSize := int(*learningConfiguration.BatchSize)
-    // Batch size 0 means do full batch learning.
-    if batchSize == 0 {
-      batchSize = len(datapoints)
-    }
-    for j := 0; j < len(perm); j += batchSize {
-      size := min(batchSize, len(perm) - j)
-      features := mat64.NewDense(size, len(datapoints[0].Features), nil)
-      values := mat64.NewDense(size, len(datapoints[0].Values), nil)
-      for k := 0; k < size; k++ {
+    // TODO(ariw): This misses the last len(perm) % batchSize examples. Is this
+    // okay?
+    for j := 0; j <= len(perm) - batchSize; j += batchSize {
+      for k := 0; k < batchSize; k++ {
         features.SetRow(k, datapoints[perm[j + k]].Features)
         values.SetRow(k, datapoints[perm[j + k]].Values)
       }

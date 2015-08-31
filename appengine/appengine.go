@@ -1,3 +1,5 @@
+// TODO(ariw): Fix appengine link errors with mat64.
+
 package appengine
 
 import (
@@ -92,11 +94,10 @@ func create(w http.ResponseWriter, r *http.Request) {
   neuralNetwork := new(neural.Network)
   if err  = neuralNetwork.Deserialize([]byte(r.FormValue("serializedNetwork"))); err != nil {
     c.Errorf("Could not deserialize neural network with error: %s", err.Error())
-    success = false
     return
   }
   // If synapse weights aren't specified, randomize them.
-  if neuralNetwork.Layers[0].Neurons[0].InputSynapses[0].Weight == 0 {
+  if neuralNetwork.Layers[0].Weight.At(0, 0) == 0 {
     neuralNetwork.RandomizeSynapses()
   }
   var modelId string

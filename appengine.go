@@ -1,5 +1,4 @@
 // +build appengine
-// TODO(ariw): Fix appengine link errors with mat64.
 
 package appengine
 

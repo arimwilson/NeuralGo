@@ -17,11 +17,18 @@ message LayerConfiguration {
   repeated double weight = 3;
 }
 
+enum ErrorName {
+  MEAN_SQUARED = 0;
+  CROSS_ENTROPY = 1;  // TODO(ariw): Make this work.
+}
+
 message NetworkConfiguration {
   // Number of inputs to the network.
   optional int32 inputs = 1;
   // Description of each hidden layer and the output layer of the network.
   repeated LayerConfiguration layer = 2;
+  // Which error function to use for training.
+  optional ErrorName error_name = 3;  // TODO(ariw): Make this work.
 }
 
 message LearningConfiguration {

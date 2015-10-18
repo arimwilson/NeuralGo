@@ -20,12 +20,10 @@ func NewActivationFunction(name ActivationName) ActivationFunction {
         return 1 / (1 + math.Exp(-v))
       }, x)
     }
-  } else if (name == ActivationName_TANH) {
+  } else {  // TANH
     return func(x mat64.Matrix, y *mat64.Dense) {
       y.Apply(func(r, c int, v float64) float64 { return math.Tanh(v) }, x)
     }
-  } else {
-    return func(x mat64.Matrix, y *mat64.Dense) { y.Clone(x) }
   }
 }
 
@@ -52,15 +50,13 @@ func NewDActivationFunction(name ActivationName) DActivationFunction {
         return logistic * (1 - logistic)
       }, y)
     }
-  } else if (name == ActivationName_TANH) {
+  } else {  // TANH
     return func(y mat64.Matrix, x *mat64.Dense) {
       x.Apply(func(r, c int, v float64) float64 {
         tanh := math.Tanh(v)
         return 1 - tanh * tanh
       }, y)
     }
-  } else {
-    return func(y mat64.Matrix, x *mat64.Dense) {}
   }
 }
 

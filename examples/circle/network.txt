@@ -1,1 +1,1 @@
-{"inputs":2,"layer":[{"name":1,"outputs":10},{"name":0,"outputs":1}]}
+{"inputs":2,"layer":[{"name":1,"outputs":10},{"name":0,"outputs":1}],"error_name": 0}

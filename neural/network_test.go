@@ -14,7 +14,7 @@ func CreateSimpleNetwork(t *testing.T) *neural.Network {
   if err := neuralNetwork.Deserialize([]byte(
       "{\"inputs\":2,\"layer\":[{\"name\":2,\"outputs\":2,\"weight\":[0.15," +
       "0.25,0.2,0.3,0.35,0.35]},{\"name\":2,\"outputs\":2,\"weight\":[0.4," +
-      "0.5,0.45,0.55,0.6,0.6]}]}")); err != nil {
+      "0.5,0.45,0.55,0.6,0.6]}],\"error_name\":0}")); err != nil {
     t.Fail()
   }
   return neuralNetwork

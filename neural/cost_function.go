@@ -2,7 +2,7 @@ package neural
 
 import (
   "github.com/gonum/matrix/mat64";
-  "math"
+  // "math"
 )
 
 type ErrorFunction interface {
@@ -10,27 +10,33 @@ type ErrorFunction interface {
   Deltas(values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix
 }
 
-struct MeanSquaredErrorFunction {
-  Cost(values mat64.Matrix, outputs mat64.Matrix) float64 {
-  }
-
-  Deltas(values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix {
-  }
+type MeanSquaredErrorFunction struct {
+}
+func (m* MeanSquaredErrorFunction) Cost(
+    values mat64.Matrix, outputs mat64.Matrix) float64 {
+  return 0
+}
+func (m* MeanSquaredErrorFunction) Deltas(
+    values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix {
+  return outputs
 }
 
-struct CrossEntropyErrorFunction {
-  Cost(values mat64.Matrix, outputs mat64.Matrix) float64 {
-  }
-
-  Deltas(values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix {
-  }
+type CrossEntropyErrorFunction struct {
+}
+func (m* CrossEntropyErrorFunction) Cost(
+    values mat64.Matrix, outputs mat64.Matrix) float64 {
+  return 0
+}
+func (m* CrossEntropyErrorFunction) Deltas(
+    values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix {
+  return outputs
 }
 
 func NewErrorFunction(name ErrorName) ErrorFunction {
   if (name == ErrorName_MEAN_SQUARED) {
-    return MeanSquaredErrorFunction()
+    return new(MeanSquaredErrorFunction)
   } else {
-    return CrossEntropyErrorFunction()
+    return new(CrossEntropyErrorFunction)
   }
 }
 

@@ -44,7 +44,8 @@ func TestBackward(t *testing.T) {
   values := mat64.NewDense(1, 2, []float64{0.01, 0.99})
   neuralNetwork.Backward(values)
   expected_gradient_1 := mat64.NewDense(2, 1, []float64{0.13849856, -0.03809824})
-  if !neuralNetwork.Layers[1].Deltas.EqualsApprox(expected_gradient_1, 0.0001) {
+  if !mat64.EqualApprox(
+          neuralNetwork.Layers[1].Deltas, expected_gradient_1, 0.0001) {
     t.Errorf("gradient 1 unexpected:\n%v",
              mat64.Formatted(neuralNetwork.Layers[1].Deltas))
   }
@@ -72,14 +73,16 @@ func TestUpdate(t *testing.T) {
   expected_weights_0 := mat64.NewDense(
       3, 2, []float64{0.149780716, 0.24975114, 0.19956143, 0.29950229, 0.35,
                       0.35})
-  if !neuralNetwork.Layers[0].Weight.EqualsApprox(expected_weights_0, 0.0001) {
+  if !mat64.EqualApprox(
+          neuralNetwork.Layers[0].Weight, expected_weights_0, 0.0001) {
     t.Errorf("weights 0 unexpected:\n%v",
              mat64.Formatted(neuralNetwork.Layers[0].Weight))
   }
   expected_weights_1 := mat64.NewDense(
       3, 2, []float64{0.35891648, 0.51130127, 0.408666186, 0.561370121, 0.6,
                       0.6})
-  if !neuralNetwork.Layers[1].Weight.EqualsApprox(expected_weights_1, 0.0001) {
+  if !mat64.EqualApprox(
+          neuralNetwork.Layers[1].Weight, expected_weights_1, 0.0001) {
     t.Errorf("weights 1 unexpected:\n%v",
              mat64.Formatted(neuralNetwork.Layers[1].Weight))
   }

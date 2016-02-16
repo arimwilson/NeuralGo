@@ -19,7 +19,7 @@ message LayerConfiguration {
 
 enum ErrorName {
   MEAN_SQUARED = 0;
-  CROSS_ENTROPY = 1;  // TODO(ariw): Make this work.
+  CROSS_ENTROPY = 1;
 }
 
 message NetworkConfiguration {

@@ -1,4 +1,6 @@
 // +build appengine
+// NeuralGo AppEngine interface. Supports network creation / loading, training,
+// testing, evaluation, and serialization.
 
 package appengine
 
@@ -92,7 +94,8 @@ func create(w http.ResponseWriter, r *http.Request) {
   rand.Seed(time.Now().UTC().UnixNano())
 
   neuralNetwork := new(neural.Network)
-  if err  = neuralNetwork.Deserialize([]byte(r.FormValue("serializedNetwork"))); err != nil {
+  if err  = neuralNetwork.Deserialize([]byte(r.FormValue("serializedNetwork")));
+     err != nil {
     c.Errorf("Could not deserialize neural network with error: %s", err.Error())
     return
   }
@@ -136,10 +139,10 @@ func train(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
-  var trainingSpeed float64
-  trainingSpeed, err = strconv.ParseFloat(r.FormValue("trainingSpeed"), 64)
+  var learningRate float64
+  learningRate, err = strconv.ParseFloat(r.FormValue("learningRate"), 64)
   if err != nil {
-    c.Errorf("Could not parse trainingSpeed with error: %s", err.Error())
+    c.Errorf("Could not parse learningRate with error: %s", err.Error())
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
@@ -161,7 +164,7 @@ func train(w http.ResponseWriter, r *http.Request) {
   // Train the model.
   learningConfiguration := neural.LearningConfiguration{
       Epochs: proto.Int32(int32(trainingIterations)),
-      Rate: proto.Float64(trainingSpeed),
+      Rate: proto.Float64(learningRate),
       Decay: proto.Float64(weightDecay),
       BatchSize: proto.Int32(int32(batchSize)),
   }

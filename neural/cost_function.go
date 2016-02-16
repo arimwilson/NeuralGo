@@ -33,10 +33,12 @@ func (m* CrossEntropyErrorFunction) Deltas(
 }
 
 func NewErrorFunction(name ErrorName) ErrorFunction {
-  if (name == ErrorName_MEAN_SQUARED) {
+  switch name {
+  case ErrorName_MEAN_SQUARED:
     return new(MeanSquaredErrorFunction)
-  } else {
+  case ErrorName_CROSS_ENTROPY:
     return new(CrossEntropyErrorFunction)
   }
+  return nil
 }
 

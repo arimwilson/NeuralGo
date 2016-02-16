@@ -50,7 +50,7 @@ function train(form) {
       { modelId: modelId,
         trainingExamples: trainingExamples,
         trainingIterations: form.trainingIterations.value,
-        trainingSpeed: form.trainingSpeed.value,
+        learningRate: form.learningRate.value,
         weightDecay: form.weightDecay.value,
         batchSize: form.batchSize.value },
       function(data) {
@@ -103,7 +103,7 @@ Serialized network file (<a href="https://raw.githubusercontent.com/evilrobot69/
 <b>Train the network</b><br>
 Training file (<a href="https://raw.githubusercontent.com/evilrobot69/NeuralGo/master/examples/circle/training.txt">example</a>): <input type="file" id="trainingExamples" onchange="getTrainingExamples(event)"><br>
 Training iterations: <input type="number" id="trainingIterations" value=1000 min=0><br>
-Training speed: <input type="number" id="trainingSpeed" value=0.001 step="any" min=0><br>
+Learning rate: <input type="number" id="learningRate" value=0.001 step="any" min=0><br>
 Weight decay: <input type="number" id="weightDecay" value=0 step="any" min=0><br>
 Batch size: <input type="number" id="batchSize" value=1 min=0><br>
 <input type="submit" value="Train">

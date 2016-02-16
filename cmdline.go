@@ -1,6 +1,7 @@
 // +build !appengine
-// Feed-forward neural network training & execution on a simple supervised
-// regression problem.
+// NeuralGo command line interface. Supports network creation / loading,
+// training, testing, and serialization. MNIST data is supported as a motivating
+// example.
 //
 // Sample usage:
 // go run cmdline.go -serialized_network_file network.txt -training_file training.txt -testing_file testing.txt

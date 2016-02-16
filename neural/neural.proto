@@ -28,7 +28,8 @@ message NetworkConfiguration {
   // Description of each hidden layer and the output layer of the network.
   repeated LayerConfiguration layer = 2;
   // Which error function to use for training.
-  optional ErrorName error_name = 3;  // TODO(ariw): Make this work.
+  // TODO(ariw): Make this work.
+  optional ErrorName error_name = 3 [default = MEAN_SQUARED];
 }
 
 message LearningConfiguration {

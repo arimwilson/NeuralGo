@@ -25,6 +25,7 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
   if batchSize == 0 {
     batchSize = len(datapoints)
   }
+  error_function := NewErrorFunction(*learningConfiguration.ErrorName)
   features := mat64.NewDense(batchSize, len(datapoints[0].Features), nil)
   values := mat64.NewDense(batchSize, len(datapoints[0].Values), nil)
   for i := 0; i < int(*learningConfiguration.Epochs); i++ {
@@ -37,7 +38,7 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
         values.SetRow(k, datapoints[perm[j + k]].Values)
       }
       neuralNetwork.Forward(features)
-      neuralNetwork.Backward(values)
+      neuralNetwork.Backward(values, error_function)
       neuralNetwork.Update(learningConfiguration)
     }
   }

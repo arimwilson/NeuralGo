@@ -40,9 +40,10 @@ func (self *Network) Forward(inputs *mat64.Dense) {
   }
 }
 
-func (self *Network) Backward(values *mat64.Dense) {
+func (self *Network) Backward(values *mat64.Dense,
+                              error_function ErrorFunction) {
   next := self.Layers[len(self.Layers) - 1]
-  next.BackwardOutput(values)
+  next.BackwardOutput(values, error_function)
   for i := len(self.Layers) - 2; i >= 0; i-- {
     self.Layers[i].Backward(next)
     next = self.Layers[i]

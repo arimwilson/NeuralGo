@@ -50,7 +50,9 @@ func (self* Layer) Backward(next *Layer) {
   self.Deltas.MulElem(self.Deltas, self.Derivatives)
 }
 
-func (self* Layer) BackwardOutput(values *mat64.Dense) {
+func (self* Layer) BackwardOutput(values *mat64.Dense,
+                                  error_function ErrorFunction) {
+  // TODO(ariw): ErrorFunction Delta use goes here.
   values.Sub(self.Output, values)
   self.Deltas.MulElem(values.T(), self.Derivatives)
 }

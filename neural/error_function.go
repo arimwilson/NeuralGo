@@ -1,5 +1,5 @@
-// TODO(ariw): Use Cost functions here in learn's Evaluate method instead of
-// MSE.
+// TODO(ariw): Use Cost functions from here in learn's Evaluate method instead
+// of MSE.
 
 package neural
 

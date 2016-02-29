@@ -43,6 +43,8 @@ var weightDecayFlag = flag.Float64(
   "weight_decay", 0, "Weight decay rate.")
 var batchSizeFlag = flag.Int(
   "batch_size", 1, "Size of batches used for training.")
+var errorNameFlag = flag.String(
+  "error_name", "QUADRATIC_COST", "Which error function to use for training.")
 var serializedNetworkOutFlag = flag.String(
   "serialized_network_out", "",
   "File to write JSON-formatted NetworkConfiguration.")
@@ -126,6 +128,8 @@ func main() {
       Rate: proto.Float64(*learningRateFlag),
       Decay: proto.Float64(*weightDecayFlag),
       BatchSize: proto.Int32(int32(*batchSizeFlag)),
+      ErrorName:
+          neural.ErrorName(neural.ErrorName_value[*errorNameFlag]).Enum(),
   }
   neural.Train(neuralNetwork, trainingExamples, learningConfiguration)
 

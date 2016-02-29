@@ -18,7 +18,7 @@ message LayerConfiguration {
 }
 
 enum ErrorName {
-  MEAN_SQUARED = 0;
+  QUADRATIC = 0;
   CROSS_ENTROPY = 1;
 }
 
@@ -27,9 +27,6 @@ message NetworkConfiguration {
   optional int32 inputs = 1;
   // Description of each hidden layer and the output layer of the network.
   repeated LayerConfiguration layer = 2;
-  // Which error function to use for training.
-  // TODO(ariw): Make this work.
-  optional ErrorName error_name = 3 [default = MEAN_SQUARED];
 }
 
 message LearningConfiguration {
@@ -41,4 +38,7 @@ message LearningConfiguration {
   optional double decay = 4;
   // Size of training batches. 0 for full batch training.
   optional int32 batch_size = 3;
+  // Which error function to use for training.
+  // TODO(ariw): Make this work.
+  optional ErrorName error_name = 5 [default = QUADRATIC];
 }

@@ -160,6 +160,13 @@ func train(w http.ResponseWriter, r *http.Request) {
     http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
+  var errorName neural.ErrorName
+  errorName, err = neural.ErrorName(strconv.Atoi(r.FormValue("errorName")))
+  if err != nil {
+    c.Errorf("Could not parse errorName with error: %s", err.Error())
+    http.Error(w, err.Error(), http.StatusInternalServerError)
+    return
+  }
 
   // Train the model.
   learningConfiguration := neural.LearningConfiguration{
@@ -167,6 +174,7 @@ func train(w http.ResponseWriter, r *http.Request) {
       Rate: proto.Float64(learningRate),
       Decay: proto.Float64(weightDecay),
       BatchSize: proto.Int32(int32(batchSize)),
+      ErrorName: errorName.Enum(),
   }
   neural.Train(&neuralNetwork, trainingExamples, learningConfiguration)
   if _, success := putModelIntoCache(

@@ -43,12 +43,13 @@ func Train(neuralNetwork *Network, datapoints []Datapoint,
   }
 }
 
+// Return mean squared error of the network on datapoints.
 func Evaluate(neuralNetwork Network, datapoints []Datapoint) float64 {
   square_error := 0.0
   for _, datapoint := range datapoints {
     output := neuralNetwork.Evaluate(datapoint.Features)
     for i, value := range datapoint.Values {
-      square_error += (value - output[i]) * (value - output[i]) / 2
+      square_error += (value - output[i]) * (value - output[i])
     }
   }
   return square_error / float64(len(datapoints))

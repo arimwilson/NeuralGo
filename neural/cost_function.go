@@ -1,3 +1,6 @@
+// TODO(ariw): Use Cost functions here in learn's Evaluate method instead of
+// MSE.
+
 package neural
 
 import (
@@ -10,13 +13,13 @@ type ErrorFunction interface {
   Deltas(values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix
 }
 
-type MeanSquaredErrorFunction struct {
+type QuadraticErrorFunction struct {
 }
-func (m* MeanSquaredErrorFunction) Cost(
+func (m* QuadraticErrorFunction) Cost(
     values mat64.Matrix, outputs mat64.Matrix) float64 {
   return 0
 }
-func (m* MeanSquaredErrorFunction) Deltas(
+func (m* QuadraticErrorFunction) Deltas(
     values mat64.Matrix, outputs mat64.Matrix) mat64.Matrix {
   return outputs
 }
@@ -34,8 +37,8 @@ func (m* CrossEntropyErrorFunction) Deltas(
 
 func NewErrorFunction(name ErrorName) ErrorFunction {
   switch name {
-  case ErrorName_MEAN_SQUARED:
-    return new(MeanSquaredErrorFunction)
+  case ErrorName_QUADRATIC:
+    return new(QuadraticErrorFunction)
   case ErrorName_CROSS_ENTROPY:
     return new(CrossEntropyErrorFunction)
   }

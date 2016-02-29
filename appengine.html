@@ -52,7 +52,8 @@ function train(form) {
         trainingIterations: form.trainingIterations.value,
         learningRate: form.learningRate.value,
         weightDecay: form.weightDecay.value,
-        batchSize: form.batchSize.value },
+        batchSize: form.batchSize.value,
+        errorName: form.errorName.value },
       function(data) {
         $("#output").val($("#output").val() + data);
       },
@@ -106,6 +107,11 @@ Training iterations: <input type="number" id="trainingIterations" value=1000 min
 Learning rate: <input type="number" id="learningRate" value=0.001 step="any" min=0><br>
 Weight decay: <input type="number" id="weightDecay" value=0 step="any" min=0><br>
 Batch size: <input type="number" id="batchSize" value=1 min=0><br>
+Error name:
+<select id="errorName">
+<option value="0">Quadratic</option>
+<option value="1">Cross-entropy</option>
+</select><br>
 <input type="submit" value="Train">
 </form><br><br>
 <b>Test the network</b><br>
